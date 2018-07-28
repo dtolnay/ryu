@@ -1,0 +1,3 @@
+This crate is a line-by-line translation of Ryū's d2s_buffered_n function from C to unsafe Rust.
+
+Original C code: https://github.com/ulfjack/ryu
