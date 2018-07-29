@@ -344,12 +344,12 @@ pub unsafe fn f2s_buffered_n(f: f32, result: *mut u8) -> usize {
         let c0 = (c % 100) << 1;
         let c1 = (c / 100) << 1;
         ptr::copy_nonoverlapping(
-            DIGIT_TABLE.as_ptr().offset(c0 as isize),
+            DIGIT_TABLE.get_unchecked(c0 as usize),
             result.offset(index + olength as isize - i - 1),
             2,
         );
         ptr::copy_nonoverlapping(
-            DIGIT_TABLE.as_ptr().offset(c1 as isize),
+            DIGIT_TABLE.get_unchecked(c1 as usize),
             result.offset(index + olength as isize - i - 3),
             2,
         );
@@ -359,7 +359,7 @@ pub unsafe fn f2s_buffered_n(f: f32, result: *mut u8) -> usize {
         let c = (output % 100) << 1;
         output /= 100;
         ptr::copy_nonoverlapping(
-            DIGIT_TABLE.as_ptr().offset(c as isize),
+            DIGIT_TABLE.get_unchecked(c as usize),
             result.offset(index + olength as isize - i - 1),
             2,
         );
@@ -393,7 +393,7 @@ pub unsafe fn f2s_buffered_n(f: f32, result: *mut u8) -> usize {
 
     if exp >= 10 {
         ptr::copy_nonoverlapping(
-            DIGIT_TABLE.as_ptr().offset((2 * exp) as isize),
+            DIGIT_TABLE.get_unchecked((2 * exp) as usize),
             result.offset(index),
             2,
         );
