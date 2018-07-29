@@ -23,7 +23,6 @@ use core::{mem, ptr};
 use common::*;
 use d2s_full_table::*;
 use digit_table::*;
-use mulshift128::*;
 
 fn pow5_factor(mut value: u64) -> i32 {
     let mut count = 0i32;
@@ -45,42 +44,16 @@ fn multiple_of_power_of_5(value: u64, p: i32) -> bool {
     pow5_factor(value) >= p
 }
 
-fn mul_shift_all(
-    mut m: u64,
-    mul: &[u64; 2],
-    j: u32,
-    vp: &mut u64,
-    vm: &mut u64,
-    mm_shift: u32,
-) -> u64 {
-    m <<= 1;
-    // m is maximum 55 bits
-    let (lo, tmp) = umul128(m, mul[0]);
-    let (mut mid, mut hi) = umul128(m, mul[1]);
-    mid = mid.wrapping_add(tmp);
-    hi = hi.wrapping_add((mid < tmp) as u64); // overflow into hi
+fn mul_shift(m: u64, mul: &[u64; 2], j: u32) -> u64 {
+    let b0 = m as u128 * mul[0] as u128;
+    let b2 = m as u128 * mul[1] as u128;
+    (((b0 >> 64) + b2) >> (j - 64)) as u64
+}
 
-    let lo2 = lo.wrapping_add(mul[0]);
-    let mid2 = mid.wrapping_add(mul[1]).wrapping_add((lo2 < lo) as u64);
-    let hi2 = hi.wrapping_add((mid2 < mid) as u64);
-    *vp = shiftright128(mid2, hi2, j - 64 - 1);
-
-    if mm_shift == 1 {
-        let lo3 = lo.wrapping_sub(mul[0]);
-        let mid3 = mid.wrapping_sub(mul[1]).wrapping_sub((lo3 > lo) as u64);
-        let hi3 = hi - (mid3 > mid) as u64;
-        *vm = shiftright128(mid3, hi3, j - 64 - 1);
-    } else {
-        let lo3 = lo + lo;
-        let mid3 = mid + mid + (lo3 < lo) as u64;
-        let hi3 = hi + hi + (mid3 < mid) as u64;
-        let lo4 = lo3 - mul[0];
-        let mid4 = mid3 - mul[1] - (lo4 > lo3) as u64;
-        let hi4 = hi3 - (mid4 > mid3) as u64;
-        *vm = shiftright128(mid4, hi4, j - 64);
-    }
-
-    shiftright128(mid, hi, j - 64 - 1)
+fn mul_shift_all(m: u64, mul: &[u64; 2], j: u32, vp: &mut u64, vm: &mut u64, mm_shift: u32) -> u64 {
+    *vp = mul_shift(4 * m + 2, mul, j);
+    *vm = mul_shift(4 * m - 1 - mm_shift as u64, mul, j);
+    mul_shift(4 * m, mul, j)
 }
 
 fn decimal_length(v: u64) -> u32 {
