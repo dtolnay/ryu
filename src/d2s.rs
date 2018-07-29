@@ -196,16 +196,14 @@ pub unsafe fn d2s_buffered_n(f: f64, result: *mut u8) -> usize {
             // Only one of mp, mv, and mm can be a multiple of 5, if any.
             if mv % 5 == 0 {
                 vr_is_trailing_zeros = multiple_of_power_of_5(mv, q);
+            } else if accept_bounds {
+                // Same as min(e2 + (~mm & 1), pow5_factor(mm)) >= q
+                // <=> e2 + (~mm & 1) >= q && pow5_factor(mm) >= q
+                // <=> true && pow5_factor(mm) >= q, since e2 >= q.
+                vm_is_trailing_zeros = multiple_of_power_of_5(mv - 1 - mm_shift as u64, q);
             } else {
-                if accept_bounds {
-                    // Same as min(e2 + (~mm & 1), pow5_factor(mm)) >= q
-                    // <=> e2 + (~mm & 1) >= q && pow5_factor(mm) >= q
-                    // <=> true && pow5_factor(mm) >= q, since e2 >= q.
-                    vm_is_trailing_zeros = multiple_of_power_of_5(mv - 1 - mm_shift as u64, q);
-                } else {
-                    // Same as min(e2 + 1, pow5_factor(mp)) >= q.
-                    vp -= multiple_of_power_of_5(mv + 2, q) as u64;
-                }
+                // Same as min(e2 + 1, pow5_factor(mp)) >= q.
+                vp -= multiple_of_power_of_5(mv + 2, q) as u64;
             }
         }
     } else {
@@ -244,9 +242,8 @@ pub unsafe fn d2s_buffered_n(f: f64, result: *mut u8) -> usize {
     // Step 4: Find the shortest decimal representation in the interval of legal representations.
     let mut removed = 0u32;
     let mut last_removed_digit = 0u8;
-    let output: u64;
     // On average, we remove ~2 digits.
-    if vm_is_trailing_zeros || vr_is_trailing_zeros {
+    let output = if vm_is_trailing_zeros || vr_is_trailing_zeros {
         // General case, which happens rarely (<1%).
         while vp / 10 > vm / 10 {
             vm_is_trailing_zeros &= vm - (vm / 10) * 10 == 0;
@@ -272,8 +269,8 @@ pub unsafe fn d2s_buffered_n(f: f64, result: *mut u8) -> usize {
             last_removed_digit = 4;
         }
         // We need to take vr+1 if vr is outside bounds or we need to round up.
-        output = vr + ((vr == vm && (!accept_bounds || !vm_is_trailing_zeros))
-            || (last_removed_digit >= 5)) as u64;
+        vr + ((vr == vm && (!accept_bounds || !vm_is_trailing_zeros)) || (last_removed_digit >= 5))
+            as u64
     } else {
         // Specialized for the common case (>99%).
         while vp / 10 > vm / 10 {
@@ -284,8 +281,8 @@ pub unsafe fn d2s_buffered_n(f: f64, result: *mut u8) -> usize {
             removed += 1;
         }
         // We need to take vr+1 if vr is outside bounds or we need to round up.
-        output = vr + ((vr == vm) || (last_removed_digit >= 5)) as u64;
-    }
+        vr + ((vr == vm) || (last_removed_digit >= 5)) as u64
+    };
     // The average output length is 16.38 digits.
     let olength = decimal_length(output);
     let vplength = olength + removed;

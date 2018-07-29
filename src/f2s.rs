@@ -251,12 +251,10 @@ pub unsafe fn f2s_buffered_n(f: f32, result: *mut u8) -> usize {
             // Only one of mp, mv, and mm can be a multiple of 5, if any.
             if mv % 5 == 0 {
                 vr_is_trailing_zeros = multiple_of_power_of_5(mv, q);
+            } else if accept_bounds {
+                vm_is_trailing_zeros = multiple_of_power_of_5(mm, q);
             } else {
-                if accept_bounds {
-                    vm_is_trailing_zeros = multiple_of_power_of_5(mm, q);
-                } else {
-                    vp -= multiple_of_power_of_5(mp, q) as u32;
-                }
+                vp -= multiple_of_power_of_5(mp, q) as u32;
             }
         }
     } else {
@@ -287,8 +285,7 @@ pub unsafe fn f2s_buffered_n(f: f32, result: *mut u8) -> usize {
 
     // Step 4: Find the shortest decimal representation in the interval of legal representations.
     let mut removed = 0u32;
-    let mut output: u32;
-    if vm_is_trailing_zeros || vr_is_trailing_zeros {
+    let mut output = if vm_is_trailing_zeros || vr_is_trailing_zeros {
         // General case, which happens rarely.
         while vp / 10 > vm / 10 {
             vm_is_trailing_zeros &= vm % 10 == 0;
@@ -314,8 +311,8 @@ pub unsafe fn f2s_buffered_n(f: f32, result: *mut u8) -> usize {
             last_removed_digit = 4;
         }
         // We need to take vr+1 if vr is outside bounds or we need to round up.
-        output = vr + ((vr == vm && (!accept_bounds || !vm_is_trailing_zeros))
-            || (last_removed_digit >= 5)) as u32;
+        vr + ((vr == vm && (!accept_bounds || !vm_is_trailing_zeros)) || (last_removed_digit >= 5))
+            as u32
     } else {
         // Common case.
         while vp / 10 > vm / 10 {
@@ -326,8 +323,8 @@ pub unsafe fn f2s_buffered_n(f: f32, result: *mut u8) -> usize {
             removed += 1;
         }
         // We need to take vr+1 if vr is outside bounds or we need to round up.
-        output = vr + ((vr == vm) || (last_removed_digit >= 5)) as u32;
-    }
+        vr + ((vr == vm) || (last_removed_digit >= 5)) as u32
+    };
     let olength = decimal_length(output);
     let vplength = olength + removed;
     let mut exp = e10 + vplength as i32 - 1;
