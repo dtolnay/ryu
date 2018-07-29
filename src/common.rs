@@ -18,7 +18,7 @@
 // is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 // KIND, either express or implied.
 
-use std::ptr;
+use core::ptr;
 
 // Returns e == 0 ? 1 : ceil(log_2(5^e)).
 pub fn pow5bits(e: i32) -> u32 {

@@ -1,3 +1,4 @@
+#![no_std]
 #![cfg_attr(
     feature = "cargo-clippy",
     allow(
