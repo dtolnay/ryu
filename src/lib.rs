@@ -132,6 +132,7 @@ fn decimal_length(v: u64) -> u32 {
     }
 }
 
+#[must_use]
 pub unsafe fn d2s_buffered_n(f: f64, result: *mut u8) -> usize {
     const DOUBLE_MANTISSA_BITS: u32 = 52;
     const DOUBLE_EXPONENT_BITS: u32 = 11;
