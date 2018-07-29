@@ -3,3 +3,6 @@ name = "ryu"
 version = "0.0.0"
 authors = ["David Tolnay <dtolnay@gmail.com>"]
 publish = false
+
+[dev-dependencies]
+rand = "0.5"
