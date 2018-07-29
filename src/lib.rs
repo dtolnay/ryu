@@ -191,7 +191,7 @@ pub unsafe fn d2s_buffered_n(f: f64, result: *mut u8) -> usize {
         let i = -e2 + q + k;
         vr = mul_shift_all(
             m2,
-            &DOUBLE_POW5_INV_SPLIT[q as usize],
+            DOUBLE_POW5_INV_SPLIT.get_unchecked(q as usize),
             i as u32,
             &mut vp,
             &mut vm,
@@ -222,7 +222,7 @@ pub unsafe fn d2s_buffered_n(f: f64, result: *mut u8) -> usize {
         let j = q - k;
         vr = mul_shift_all(
             m2,
-            &DOUBLE_POW5_SPLIT[i as usize],
+            DOUBLE_POW5_SPLIT.get_unchecked(i as usize),
             j as u32,
             &mut vp,
             &mut vm,
@@ -336,8 +336,8 @@ pub unsafe fn d2s_buffered_n(f: f64, result: *mut u8) -> usize {
     }
     if output2 >= 10 {
         let c = (output2 << 1) as u32;
-        *result.offset(index + olength as isize - i) = DIGIT_TABLE[c as usize + 1];
-        *result.offset(index) = DIGIT_TABLE[c as usize];
+        *result.offset(index + olength as isize - i) = *DIGIT_TABLE.get_unchecked(c as usize + 1);
+        *result.offset(index) = *DIGIT_TABLE.get_unchecked(c as usize);
     } else {
         // Print the leading decimal digit.
         *result.offset(index) = b'0' + output2 as u8;
