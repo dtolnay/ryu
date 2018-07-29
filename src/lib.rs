@@ -50,12 +50,12 @@ fn multiple_of_power_of_5(value: u64, p: i32) -> bool {
     pow5_factor(value) >= p
 }
 
-unsafe fn mul_shift_all(
+fn mul_shift_all(
     mut m: u64,
     mul: &[u64; 2],
     j: u32,
-    vp: *mut u64,
-    vm: *mut u64,
+    vp: &mut u64,
+    vm: &mut u64,
     mm_shift: u32,
 ) -> u64 {
     m <<= 1;
