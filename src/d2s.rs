@@ -100,6 +100,149 @@ fn decimal_length(v: u64) -> u32 {
     }
 }
 
+// A floating decimal representing m * 10^e.
+struct FloatingDecimal64 {
+    exponent: i16,
+    mantissa: i64,
+}
+
+unsafe fn fd_to_char(v: FloatingDecimal64, result: *mut u8) -> usize {
+    let mut index = 0isize;
+    let mut output = if v.mantissa < 0 {
+        *result.offset(index) = b'-';
+        index += 1;
+        -v.mantissa as u64
+    } else {
+        v.mantissa as u64
+    };
+
+    let olength = decimal_length(output);
+
+    // Print the decimal digits. This following code is equivalent to:
+    // for (uint32_t i = 0; i < olength - 1; ++i) {
+    //   const uint32_t c = output % 10; output /= 10;
+    //   result[index + olength - i] = (char) ('0' + c);
+    // }
+    // // Print the leading decimal digit.
+    // result[index] = '0' + output % 10;
+
+    let mut i = 0isize;
+    // We prefer 32-bit operations, even on 64-bit platforms.
+    // We have at most 17 digits, and 32-bit unsigned int can store 9. We cut off
+    // 8 in the first iteration, so the remainder will fit into a 32-bit int.
+    if olength > 8 {
+        // Expensive 64-bit division.
+        let mut output2 = (output - 100000000 * (output / 100000000)) as u32;
+        output /= 100000000;
+
+        let c = output2 % 10000;
+        output2 /= 10000;
+        let d = output2 % 10000;
+        let c0 = (c % 100) << 1;
+        let c1 = (c / 100) << 1;
+        let d0 = (d % 100) << 1;
+        let d1 = (d / 100) << 1;
+        ptr::copy_nonoverlapping(
+            DIGIT_TABLE.get_unchecked(c0 as usize),
+            result.offset(index + olength as isize - i - 1),
+            2,
+        );
+        ptr::copy_nonoverlapping(
+            DIGIT_TABLE.get_unchecked(c1 as usize),
+            result.offset(index + olength as isize - i - 3),
+            2,
+        );
+        ptr::copy_nonoverlapping(
+            DIGIT_TABLE.get_unchecked(d0 as usize),
+            result.offset(index + olength as isize - i - 5),
+            2,
+        );
+        ptr::copy_nonoverlapping(
+            DIGIT_TABLE.get_unchecked(d1 as usize),
+            result.offset(index + olength as isize - i - 7),
+            2,
+        );
+        i += 8;
+    }
+    let mut output2 = output as u32;
+    while output2 >= 10000 {
+        let c = (output2 - 10000 * (output2 / 10000)) as u32;
+        output2 /= 10000;
+        let c0 = (c % 100) << 1;
+        let c1 = (c / 100) << 1;
+        ptr::copy_nonoverlapping(
+            DIGIT_TABLE.get_unchecked(c0 as usize),
+            result.offset(index + olength as isize - i - 1),
+            2,
+        );
+        ptr::copy_nonoverlapping(
+            DIGIT_TABLE.get_unchecked(c1 as usize),
+            result.offset(index + olength as isize - i - 3),
+            2,
+        );
+        i += 4;
+    }
+    if output2 >= 100 {
+        let c = ((output2 % 100) << 1) as u32;
+        output2 /= 100;
+        ptr::copy_nonoverlapping(
+            DIGIT_TABLE.get_unchecked(c as usize),
+            result.offset(index + olength as isize - i - 1),
+            2,
+        );
+        i += 2;
+    }
+    if output2 >= 10 {
+        let c = (output2 << 1) as u32;
+        // We can't use memcpy here: the decimal dot goes between these two digits.
+        *result.offset(index + olength as isize - i) = *DIGIT_TABLE.get_unchecked(c as usize + 1);
+        *result.offset(index) = *DIGIT_TABLE.get_unchecked(c as usize);
+    } else {
+        *result.offset(index) = b'0' + output2 as u8;
+    }
+
+    // Print decimal point if needed.
+    if olength > 1 {
+        *result.offset(index + 1) = b'.';
+        index += olength as isize + 1;
+    } else {
+        index += 1;
+    }
+
+    // Print the exponent.
+    *result.offset(index) = b'E';
+    index += 1;
+    let mut exp = v.exponent as i32 + olength as i32;
+    if exp < 0 {
+        *result.offset(index) = b'-';
+        index += 1;
+        exp = -exp;
+    }
+
+    if exp >= 100 {
+        let c = exp % 10;
+        ptr::copy_nonoverlapping(
+            DIGIT_TABLE.get_unchecked((2 * (exp / 10)) as usize),
+            result.offset(index),
+            2,
+        );
+        *result.offset(index + 2) = b'0' + c as u8;
+        index += 3;
+    } else if exp >= 10 {
+        ptr::copy_nonoverlapping(
+            DIGIT_TABLE.get_unchecked((2 * exp) as usize),
+            result.offset(index),
+            2,
+        );
+        index += 2;
+    } else {
+        *result.offset(index) = b'0' + exp as u8;
+        index += 1;
+    }
+
+    index as usize
+}
+
 #[must_use]
 pub unsafe fn d2s_buffered_n(f: f64, result: *mut u8) -> usize {
     const DOUBLE_MANTISSA_BITS: u32 = 52;
@@ -257,94 +400,12 @@ pub unsafe fn d2s_buffered_n(f: f64, result: *mut u8) -> usize {
         vr + ((vr == vm) || (last_removed_digit >= 5)) as u64
     };
     // The average output length is 16.38 digits.
-    let olength = decimal_length(output);
-    let vplength = olength + removed;
-    let mut exp = e10 + vplength as i32 - 1;
+    let exp = e10 + removed as i32 - 1;
 
     // Step 5: Print the decimal representation.
-    let mut index = 0isize;
-    if sign {
-        *result.offset(index) = b'-';
-        index += 1;
-    }
-
-    // Print decimal digits after the decimal point.
-    let mut i = 0isize;
-    // 64-bit division is efficient on 64-bit platforms.
-    let mut output2 = output;
-    while output2 >= 10000 {
-        let c = (output2 - 10000 * (output2 / 10000)) as u32;
-        output2 /= 10000;
-        let c0 = (c % 100) << 1;
-        let c1 = (c / 100) << 1;
-        ptr::copy_nonoverlapping(
-            DIGIT_TABLE.get_unchecked(c0 as usize),
-            result.offset(index + olength as isize - i - 1),
-            2,
-        );
-        ptr::copy_nonoverlapping(
-            DIGIT_TABLE.get_unchecked(c1 as usize),
-            result.offset(index + olength as isize - i - 3),
-            2,
-        );
-        i += 4;
-    }
-    if output2 >= 100 {
-        let c = ((output2 % 100) << 1) as u32;
-        output2 /= 100;
-        ptr::copy_nonoverlapping(
-            DIGIT_TABLE.get_unchecked(c as usize),
-            result.offset(index + olength as isize - i - 1),
-            2,
-        );
-        i += 2;
-    }
-    if output2 >= 10 {
-        let c = (output2 << 1) as u32;
-        *result.offset(index + olength as isize - i) = *DIGIT_TABLE.get_unchecked(c as usize + 1);
-        *result.offset(index) = *DIGIT_TABLE.get_unchecked(c as usize);
-    } else {
-        // Print the leading decimal digit.
-        *result.offset(index) = b'0' + output2 as u8;
-    }
-
-    // Print decimal point if needed.
-    if olength > 1 {
-        *result.offset(index + 1) = b'.';
-        index += olength as isize + 1;
-    } else {
-        index += 1;
-    }
-
-    // Print the exponent.
-    *result.offset(index) = b'E';
-    index += 1;
-    if exp < 0 {
-        *result.offset(index) = b'-';
-        index += 1;
-        exp = -exp;
-    }
-
-    if exp >= 100 {
-        let c = exp % 10;
-        ptr::copy_nonoverlapping(
-            DIGIT_TABLE.get_unchecked((2 * (exp / 10)) as usize),
-            result.offset(index),
-            2,
-        );
-        *result.offset(index + 2) = b'0' + c as u8;
-        index += 3;
-    } else if exp >= 10 {
-        ptr::copy_nonoverlapping(
-            DIGIT_TABLE.get_unchecked((2 * exp) as usize),
-            result.offset(index),
-            2,
-        );
-        index += 2;
-    } else {
-        *result.offset(index) = b'0' + exp as u8;
-        index += 1;
-    }
-
-    index as usize
+    let fd = FloatingDecimal64 {
+        exponent: exp as i16,
+        mantissa: if sign { -(output as i64) } else { output as i64 },
+    };
+    fd_to_char(fd, result)
 }

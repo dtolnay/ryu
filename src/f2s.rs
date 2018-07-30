@@ -337,6 +337,12 @@ pub unsafe fn f2s_buffered_n(f: f32, result: *mut u8) -> usize {
     }
 
     // Print decimal digits after the decimal point.
+    // The following code is equivalent to:
+    // for (uint32_t i = 0; i < olength - 1; ++i) {
+    //   const uint32_t c = output % 10; output /= 10;
+    //   result[index + olength - i] = (char) ('0' + c);
+    // }
+    // result[index] = '0' + output % 10;
     let mut i = 0isize;
     while output >= 10000 {
         let c = output - 10000 * (output / 10000);
@@ -370,7 +376,6 @@ pub unsafe fn f2s_buffered_n(f: f32, result: *mut u8) -> usize {
         *result.offset(index + olength as isize - i) = *DIGIT_TABLE.get_unchecked(c as usize + 1);
         *result.offset(index) = *DIGIT_TABLE.get_unchecked(c as usize);
     } else {
-        // Print the leading decimal digit.
         *result.offset(index) = b'0' + output as u8;
     }
 
