@@ -405,7 +405,11 @@ pub unsafe fn d2s_buffered_n(f: f64, result: *mut u8) -> usize {
     // Step 5: Print the decimal representation.
     let fd = FloatingDecimal64 {
         exponent: exp as i16,
-        mantissa: if sign { -(output as i64) } else { output as i64 },
+        mantissa: if sign {
+            -(output as i64)
+        } else {
+            output as i64
+        },
     };
     fd_to_char(fd, result)
 }
