@@ -5,6 +5,7 @@
         cast_lossless,
         cyclomatic_complexity,
         many_single_char_names,
+        needless_pass_by_value,
         unreadable_literal,
     )
 )]
