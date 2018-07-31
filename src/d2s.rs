@@ -118,12 +118,12 @@ unsafe fn fd_to_char(v: FloatingDecimal64, result: *mut u8) -> usize {
 
     let olength = decimal_length(output);
 
-    // Print the decimal digits. This following code is equivalent to:
+    // Print the decimal digits.
+    // The following code is equivalent to:
     // for (uint32_t i = 0; i < olength - 1; ++i) {
     //   const uint32_t c = output % 10; output /= 10;
     //   result[index + olength - i] = (char) ('0' + c);
     // }
-    // // Print the leading decimal digit.
     // result[index] = '0' + output % 10;
 
     let mut i = 0isize;

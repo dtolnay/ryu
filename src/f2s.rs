@@ -336,7 +336,7 @@ pub unsafe fn f2s_buffered_n(f: f32, result: *mut u8) -> usize {
         index += 1;
     }
 
-    // Print decimal digits after the decimal point.
+    // Print the decimal digits.
     // The following code is equivalent to:
     // for (uint32_t i = 0; i < olength - 1; ++i) {
     //   const uint32_t c = output % 10; output /= 10;
