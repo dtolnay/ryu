@@ -20,5 +20,8 @@ mod d2s_full_table;
 mod digit_table;
 mod f2s;
 
+#[cfg(feature = "pretty")]
+pub mod pretty;
+
 pub use d2s::d2s_buffered_n;
 pub use f2s::f2s_buffered_n;

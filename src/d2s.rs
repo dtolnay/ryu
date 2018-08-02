@@ -27,8 +27,9 @@ use digit_table::*;
 #[cfg(feature = "no-panic")]
 use no_panic::no_panic;
 
-const DOUBLE_MANTISSA_BITS: u32 = 52;
-const DOUBLE_EXPONENT_BITS: u32 = 11;
+pub const DOUBLE_MANTISSA_BITS: u32 = 52;
+pub const DOUBLE_EXPONENT_BITS: u32 = 11;
+
 const DOUBLE_POW5_INV_BITCOUNT: i32 = 122;
 const DOUBLE_POW5_BITCOUNT: i32 = 121;
 
@@ -71,7 +72,7 @@ fn mul_shift_all(
     mul_shift(4 * m, mul, j)
 }
 
-fn decimal_length(v: u64) -> u32 {
+pub fn decimal_length(v: u64) -> u32 {
     // This is slightly faster than a loop.
     // The average output length is 16.38 digits, so we check high-to-low.
     // Function precondition: v is not an 18, 19, or 20-digit number.
@@ -116,12 +117,12 @@ fn decimal_length(v: u64) -> u32 {
 }
 
 // A floating decimal representing m * 10^e.
-struct FloatingDecimal64 {
-    mantissa: u64,
-    exponent: i32,
+pub struct FloatingDecimal64 {
+    pub mantissa: u64,
+    pub exponent: i32,
 }
 
-fn d2d(ieee_mantissa: u64, ieee_exponent: u32) -> FloatingDecimal64 {
+pub fn d2d(ieee_mantissa: u64, ieee_exponent: u32) -> FloatingDecimal64 {
     let offset = (1u32 << (DOUBLE_EXPONENT_BITS - 1)) - 1;
 
     let (e2, m2) = if ieee_exponent == 0 {
