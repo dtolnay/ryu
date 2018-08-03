@@ -114,17 +114,19 @@ struct FloatingDecimal64 {
 fn d2d(ieee_mantissa: u64, ieee_exponent: u32) -> FloatingDecimal64 {
     let offset = (1u32 << (DOUBLE_EXPONENT_BITS - 1)) - 1;
 
-    let e2: i32;
-    let m2: u64;
     // Case distinction; exit early for the easy cases.
-    if ieee_exponent == 0 {
-        // We subtract 2 so that the bounds computation has 2 additional bits.
-        e2 = 1 - offset as i32 - DOUBLE_MANTISSA_BITS as i32 - 2;
-        m2 = ieee_mantissa;
+    let (e2, m2) = if ieee_exponent == 0 {
+        (
+            // We subtract 2 so that the bounds computation has 2 additional bits.
+            1 - offset as i32 - DOUBLE_MANTISSA_BITS as i32 - 2,
+            ieee_mantissa,
+        )
     } else {
-        e2 = ieee_exponent as i32 - offset as i32 - DOUBLE_MANTISSA_BITS as i32 - 2;
-        m2 = (1u64 << DOUBLE_MANTISSA_BITS) | ieee_mantissa;
-    }
+        (
+            ieee_exponent as i32 - offset as i32 - DOUBLE_MANTISSA_BITS as i32 - 2,
+            (1u64 << DOUBLE_MANTISSA_BITS) | ieee_mantissa,
+        )
+    };
     let even = (m2 & 1) == 0;
     let accept_bounds = even;
 
