@@ -55,7 +55,14 @@ fn mul_shift(m: u64, mul: &(u64, u64), j: u32) -> u64 {
     (((b0 >> 64) + b2) >> (j - 64)) as u64
 }
 
-fn mul_shift_all(m: u64, mul: &(u64, u64), j: u32, vp: &mut u64, vm: &mut u64, mm_shift: u32) -> u64 {
+fn mul_shift_all(
+    m: u64,
+    mul: &(u64, u64),
+    j: u32,
+    vp: &mut u64,
+    vm: &mut u64,
+    mm_shift: u32,
+) -> u64 {
     *vp = mul_shift(4 * m + 2, mul, j);
     *vm = mul_shift(4 * m - 1 - mm_shift as u64, mul, j);
     mul_shift(4 * m, mul, j)

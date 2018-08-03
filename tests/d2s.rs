@@ -71,7 +71,10 @@ fn test_switch_to_subnormal() {
 
 #[test]
 fn test_min_and_max() {
-    assert_eq!("1.7976931348623157E308", d2s(f64::from_bits(0x7fefffffffffffff)));
+    assert_eq!(
+        "1.7976931348623157E308",
+        d2s(f64::from_bits(0x7fefffffffffffff))
+    );
     assert_eq!("5E-324", d2s(f64::from_bits(1)));
 }
 
