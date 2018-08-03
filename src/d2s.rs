@@ -121,7 +121,6 @@ struct FloatingDecimal64 {
 fn d2d(ieee_mantissa: u64, ieee_exponent: u32) -> FloatingDecimal64 {
     let offset = (1u32 << (DOUBLE_EXPONENT_BITS - 1)) - 1;
 
-    // Case distinction; exit early for the easy cases.
     let (e2, m2) = if ieee_exponent == 0 {
         (
             // We subtract 2 so that the bounds computation has 2 additional bits.
@@ -278,7 +277,7 @@ pub unsafe fn d2s_buffered_n(f: f64, result: *mut u8) -> usize {
     let ieee_mantissa = bits & ((1u64 << DOUBLE_MANTISSA_BITS) - 1);
     let ieee_exponent =
         (bits >> DOUBLE_MANTISSA_BITS) as u32 & ((1u32 << DOUBLE_EXPONENT_BITS) - 1);
-
+    // Case distinction; exit early for the easy cases.
     if ieee_exponent == ((1u32 << DOUBLE_EXPONENT_BITS) - 1)
         || (ieee_exponent == 0 && ieee_mantissa == 0)
     {
