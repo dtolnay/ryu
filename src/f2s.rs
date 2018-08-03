@@ -411,6 +411,7 @@ unsafe fn to_chars(v: FloatingDecimal32, sign: bool, result: *mut u8) -> usize {
         index += 1;
     }
 
+    debug_assert!(index <= 15);
     index as usize
 }
 

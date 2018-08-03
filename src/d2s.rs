@@ -418,5 +418,6 @@ pub unsafe fn d2s_buffered_n(f: f64, result: *mut u8) -> usize {
         index += 1;
     }
 
+    debug_assert!(index <= 24);
     index as usize
 }
