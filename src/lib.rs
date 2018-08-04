@@ -1,4 +1,5 @@
 #![no_std]
+#![cfg_attr(feature = "no-panic", feature(use_extern_macros))]
 #![cfg_attr(
     feature = "cargo-clippy",
     allow(
@@ -9,6 +10,9 @@
         unreadable_literal,
     )
 )]
+
+#[cfg(feature = "no-panic")]
+extern crate no_panic;
 
 mod common;
 mod d2s;

@@ -24,6 +24,9 @@ use common::*;
 use d2s_full_table::*;
 use digit_table::*;
 
+#[cfg(feature = "no-panic")]
+use no_panic::no_panic;
+
 const DOUBLE_MANTISSA_BITS: u32 = 52;
 const DOUBLE_EXPONENT_BITS: u32 = 11;
 const DOUBLE_POW5_INV_BITCOUNT: i32 = 122;
@@ -404,6 +407,7 @@ unsafe fn to_chars(v: FloatingDecimal64, sign: bool, result: *mut u8) -> usize {
 }
 
 #[must_use]
+#[cfg_attr(feature = "no-panic", no_panic)]
 pub unsafe fn d2s_buffered_n(f: f64, result: *mut u8) -> usize {
     // Step 1: Decode the floating-point number, and unify normalized and subnormal cases.
     let bits = f.to_bits().to_le();
