@@ -151,11 +151,13 @@ fn mul_shift(m: u32, factor: u64, shift: i32) -> u32 {
 }
 
 fn mul_pow5_inv_div_pow2(m: u32, q: u32, j: i32) -> u32 {
-    mul_shift(m, FLOAT_POW5_INV_SPLIT[q as usize], j)
+    debug_assert!(q < FLOAT_POW5_INV_SPLIT.len() as u32);
+    unsafe { mul_shift(m, *FLOAT_POW5_INV_SPLIT.get_unchecked(q as usize), j) }
 }
 
 fn mul_pow5_div_pow2(m: u32, i: u32, j: i32) -> u32 {
-    mul_shift(m, FLOAT_POW5_SPLIT[i as usize], j)
+    debug_assert!(i < FLOAT_POW5_SPLIT.len() as u32);
+    unsafe { mul_shift(m, *FLOAT_POW5_SPLIT.get_unchecked(i as usize), j) }
 }
 
 fn decimal_length(v: u32) -> u32 {
