@@ -8,6 +8,7 @@ pub struct Buffer {
 }
 
 impl Buffer {
+    #[inline]
     pub fn new() -> Self {
         Buffer {
             bytes: unsafe { mem::uninitialized() },
@@ -20,6 +21,7 @@ impl Buffer {
 }
 
 impl Default for Buffer {
+    #[inline]
     fn default() -> Self {
         Buffer::new()
     }
@@ -31,6 +33,7 @@ pub trait Float: Sealed {
 }
 
 impl Float for f32 {
+    #[inline]
     fn write_to_ryu_buffer(self, buffer: &mut Buffer) -> &str {
         unsafe {
             let n = pretty::f2s_buffered_n(self, &mut buffer.bytes[0]);
@@ -40,6 +43,7 @@ impl Float for f32 {
 }
 
 impl Float for f64 {
+    #[inline]
     fn write_to_ryu_buffer(self, buffer: &mut Buffer) -> &str {
         unsafe {
             let n = pretty::d2s_buffered_n(self, &mut buffer.bytes[0]);
