@@ -1,14 +1,27 @@
-use core::str;
+use core::{mem, str};
 
 use pretty;
 
+#[derive(Copy, Clone)]
 pub struct Buffer {
     bytes: [u8; 24],
 }
 
 impl Buffer {
-    pub fn write<F: Float>(&mut self, f: F) -> &str {
+    pub fn new() -> Self {
+        Buffer {
+            bytes: unsafe { mem::uninitialized() },
+        }
+    }
+
+    pub fn format<F: Float>(&mut self, f: F) -> &str {
         f.write_to_ryu_buffer(self)
+    }
+}
+
+impl Default for Buffer {
+    fn default() -> Self {
+        Buffer::new()
     }
 }
 
