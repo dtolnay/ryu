@@ -1,0 +1,40 @@
+use core::str;
+
+use pretty;
+
+pub struct Buffer {
+    bytes: [u8; 24],
+}
+
+impl Buffer {
+    pub fn write<F: Float>(&mut self, f: F) -> &str {
+        f.write_to_ryu_buffer(self)
+    }
+}
+
+pub trait Float: Sealed {
+    #[doc(hidden)]
+    fn write_to_ryu_buffer(self, buffer: &mut Buffer) -> &str;
+}
+
+impl Float for f32 {
+    fn write_to_ryu_buffer(self, buffer: &mut Buffer) -> &str {
+        unsafe {
+            let n = pretty::f2s_buffered_n(self, &mut buffer.bytes[0]);
+            str::from_utf8_unchecked(&buffer.bytes[..n])
+        }
+    }
+}
+
+impl Float for f64 {
+    fn write_to_ryu_buffer(self, buffer: &mut Buffer) -> &str {
+        unsafe {
+            let n = pretty::d2s_buffered_n(self, &mut buffer.bytes[0]);
+            str::from_utf8_unchecked(&buffer.bytes[..n])
+        }
+    }
+}
+
+pub trait Sealed {}
+impl Sealed for f32 {}
+impl Sealed for f64 {}
