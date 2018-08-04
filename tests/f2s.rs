@@ -30,20 +30,13 @@ fn f2s(f: f32) -> String {
     s.to_owned()
 }
 
-#[cfg(feature = "pretty")]
 fn f2s_pretty(f: f32) -> String {
-    let mut bytes = [0u8; 24];
-    let n = unsafe { ryu::pretty::f2s_buffered_n(f, &mut bytes[0]) };
-    let s = str::from_utf8(&bytes[..n]).unwrap();
-    s.to_owned()
+    ryu::Buffer::new().format(f).to_owned()
 }
 
 fn check(f: f32, expected: &str, pretty: &str) {
     assert_eq!(expected, f2s(f));
-    #[cfg(feature = "pretty")]
     assert_eq!(pretty, f2s_pretty(f));
-    #[cfg(not(feature = "pretty"))]
-    let _ = pretty;
 }
 
 #[test]
@@ -61,15 +54,12 @@ fn test_ryu() {
 #[test]
 fn test_random() {
     let mut bytes = [0u8; 24];
+    let mut buffer = ryu::Buffer::new();
     for _ in 0..1000000 {
         let f = rand::random();
         let n = unsafe { ryu::f2s_buffered_n(f, &mut bytes[0]) };
         assert_eq!(f, str::from_utf8(&bytes[..n]).unwrap().parse().unwrap());
-        #[cfg(feature = "pretty")]
-        {
-            let n = unsafe { ryu::pretty::f2s_buffered_n(f, &mut bytes[0]) };
-            assert_eq!(f, str::from_utf8(&bytes[..n]).unwrap().parse().unwrap());
-        }
+        assert_eq!(f, buffer.format(f).parse().unwrap());
     }
 }
 
@@ -77,6 +67,7 @@ fn test_random() {
 #[test]
 fn test_exhaustive() {
     let mut bytes = [0u8; 24];
+    let mut buffer = ryu::Buffer::new();
     for u in 0..=u32::max_value() {
         if u % 1000000 == 0 {
             println!("{}", u);
@@ -87,11 +78,7 @@ fn test_exhaustive() {
         }
         let n = unsafe { ryu::f2s_buffered_n(f, &mut bytes[0]) };
         assert_eq!(f, str::from_utf8(&bytes[..n]).unwrap().parse().unwrap());
-        #[cfg(feature = "pretty")]
-        {
-            let n = unsafe { ryu::pretty::f2s_buffered_n(f, &mut bytes[0]) };
-            assert_eq!(f, str::from_utf8(&bytes[..n]).unwrap().parse().unwrap());
-        }
+        assert_eq!(f, buffer.format(f).parse().unwrap());
     }
 }
 
