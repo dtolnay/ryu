@@ -141,8 +141,8 @@ fn d2d(ieee_mantissa: u64, ieee_exponent: u32) -> FloatingDecimal64 {
     // Implicit bool -> int conversion. True is 1, false is 0.
     let mm_shift = ((m2 != (1u64 << DOUBLE_MANTISSA_BITS)) || (ieee_exponent <= 1)) as u32;
     // We would compute mp and mm like this:
-    //     uint64_t mp = 4 * m2 + 2;
-    //     uint64_t mm = mv - 1 - mm_shift;
+    // uint64_t mp = 4 * m2 + 2;
+    // uint64_t mm = mv - 1 - mm_shift;
 
     // Step 3: Convert to a decimal power base using 128-bit arithmetic.
     let mut vr: u64;
@@ -257,35 +257,16 @@ fn d2d(ieee_mantissa: u64, ieee_exponent: u32) -> FloatingDecimal64 {
         // We need to take vr+1 if vr is outside bounds or we need to round up.
         vr + ((vr == vm) || (last_removed_digit >= 5)) as u64
     };
-    // The average output length is 16.38 digits.
     let exp = e10 + removed as i32 - 1;
 
-    // Step 5: Print the decimal representation.
     FloatingDecimal64 {
         exponent: exp,
         mantissa: output,
     }
 }
 
-#[must_use]
-pub unsafe fn d2s_buffered_n(f: f64, result: *mut u8) -> usize {
-    // Step 1: Decode the floating-point number, and unify normalized and subnormal cases.
-    let bits = f.to_bits().to_le();
-
-    // Decode bits into sign, mantissa, and exponent.
-    let sign = ((bits >> (DOUBLE_MANTISSA_BITS + DOUBLE_EXPONENT_BITS)) & 1) != 0;
-    let ieee_mantissa = bits & ((1u64 << DOUBLE_MANTISSA_BITS) - 1);
-    let ieee_exponent =
-        (bits >> DOUBLE_MANTISSA_BITS) as u32 & ((1u32 << DOUBLE_EXPONENT_BITS) - 1);
-    // Case distinction; exit early for the easy cases.
-    if ieee_exponent == ((1u32 << DOUBLE_EXPONENT_BITS) - 1)
-        || (ieee_exponent == 0 && ieee_mantissa == 0)
-    {
-        return copy_special_str(result, sign);
-    }
-
-    let v = d2d(ieee_mantissa, ieee_exponent);
-
+unsafe fn to_chars(v: FloatingDecimal64, sign: bool, result: *mut u8) -> usize {
+    // Step 5: Print the decimal representation.
     let mut index = 0isize;
     if sign {
         *result.offset(index) = b'-';
@@ -420,4 +401,25 @@ pub unsafe fn d2s_buffered_n(f: f64, result: *mut u8) -> usize {
 
     debug_assert!(index <= 24);
     index as usize
+}
+
+#[must_use]
+pub unsafe fn d2s_buffered_n(f: f64, result: *mut u8) -> usize {
+    // Step 1: Decode the floating-point number, and unify normalized and subnormal cases.
+    let bits = f.to_bits().to_le();
+
+    // Decode bits into sign, mantissa, and exponent.
+    let sign = ((bits >> (DOUBLE_MANTISSA_BITS + DOUBLE_EXPONENT_BITS)) & 1) != 0;
+    let ieee_mantissa = bits & ((1u64 << DOUBLE_MANTISSA_BITS) - 1);
+    let ieee_exponent =
+        (bits >> DOUBLE_MANTISSA_BITS) as u32 & ((1u32 << DOUBLE_EXPONENT_BITS) - 1);
+    // Case distinction; exit early for the easy cases.
+    if ieee_exponent == ((1u32 << DOUBLE_EXPONENT_BITS) - 1)
+        || (ieee_exponent == 0 && ieee_mantissa == 0)
+    {
+        return copy_special_str(result, sign);
+    }
+
+    let v = d2d(ieee_mantissa, ieee_exponent);
+    to_chars(v, sign, result)
 }

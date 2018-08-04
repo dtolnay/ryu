@@ -375,6 +375,7 @@ unsafe fn to_chars(v: FloatingDecimal32, sign: bool, result: *mut u8) -> usize {
     }
     if output >= 10 {
         let c = output << 1;
+        // We can't use memcpy here: the decimal dot goes between these two digits.
         *result.offset(index + olength as isize - i) = *DIGIT_TABLE.get_unchecked(c as usize + 1);
         *result.offset(index) = *DIGIT_TABLE.get_unchecked(c as usize);
     } else {
