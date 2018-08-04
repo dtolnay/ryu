@@ -123,17 +123,17 @@ pub struct FloatingDecimal64 {
 }
 
 pub fn d2d(ieee_mantissa: u64, ieee_exponent: u32) -> FloatingDecimal64 {
-    let offset = (1u32 << (DOUBLE_EXPONENT_BITS - 1)) - 1;
+    let bias = (1u32 << (DOUBLE_EXPONENT_BITS - 1)) - 1;
 
     let (e2, m2) = if ieee_exponent == 0 {
         (
             // We subtract 2 so that the bounds computation has 2 additional bits.
-            1 - offset as i32 - DOUBLE_MANTISSA_BITS as i32 - 2,
+            1 - bias as i32 - DOUBLE_MANTISSA_BITS as i32 - 2,
             ieee_mantissa,
         )
     } else {
         (
-            ieee_exponent as i32 - offset as i32 - DOUBLE_MANTISSA_BITS as i32 - 2,
+            ieee_exponent as i32 - bias as i32 - DOUBLE_MANTISSA_BITS as i32 - 2,
             (1u64 << DOUBLE_MANTISSA_BITS) | ieee_mantissa,
         )
     };
@@ -200,17 +200,21 @@ pub fn d2d(ieee_mantissa: u64, ieee_exponent: u32) -> FloatingDecimal64 {
             mm_shift,
         );
         if q <= 1 {
-            vr_is_trailing_zeros = (!(mv as u32) & 1) >= q as u32;
+            // {vr,vp,vm} is trailing zeros if {mv,mp,mm} has at least q trailing 0 bits.
+            // mv = 4 m2, so it always has at least two trailing 0 bits.
+            vr_is_trailing_zeros = true;
             if accept_bounds {
-                vm_is_trailing_zeros = (!((mv - 1 - mm_shift as u64) as u32) & 1) >= q as u32;
+                // mm = mv - 1 - mmShift, so it has 1 trailing 0 bit iff mmShift == 1.
+                vm_is_trailing_zeros = mm_shift == 1;
             } else {
+                // mp = mv + 2, so it always has at least one trailing 0 bit.
                 vp -= 1;
             }
         } else if q < 63 {
             // TODO(ulfjack): Use a tighter bound here.
             // We need to compute min(ntz(mv), pow5_factor(mv) - e2) >= q-1
             // <=> ntz(mv) >= q-1  &&  pow5_factor(mv) - e2 >= q-1
-            // <=> ntz(mv) >= q-1
+            // <=> ntz(mv) >= q-1    (e2 is negative and -e2 >= q)
             // <=> (mv & ((1 << (q-1)) - 1)) == 0
             // We also need to make sure that the left shift does not overflow.
             vr_is_trailing_zeros = (mv & ((1u64 << (q - 1)) - 1)) == 0;
@@ -243,7 +247,7 @@ pub fn d2d(ieee_mantissa: u64, ieee_exponent: u32) -> FloatingDecimal64 {
             }
         }
         if vr_is_trailing_zeros && last_removed_digit == 5 && vr % 2 == 0 {
-            // Round down not up if the number ends in X50000.
+            // Round even if the exact numbers is .....50..0.
             last_removed_digit = 4;
         }
         // We need to take vr+1 if vr is outside bounds or we need to round up.

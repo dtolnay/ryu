@@ -197,17 +197,17 @@ pub struct FloatingDecimal32 {
 }
 
 pub fn f2d(ieee_mantissa: u32, ieee_exponent: u32) -> FloatingDecimal32 {
-    let offset = (1u32 << (FLOAT_EXPONENT_BITS - 1)) - 1;
+    let bias = (1u32 << (FLOAT_EXPONENT_BITS - 1)) - 1;
 
     let (e2, m2) = if ieee_exponent == 0 {
         (
             // We subtract 2 so that the bounds computation has 2 additional bits.
-            1 - offset as i32 - FLOAT_MANTISSA_BITS as i32 - 2,
+            1 - bias as i32 - FLOAT_MANTISSA_BITS as i32 - 2,
             ieee_mantissa,
         )
     } else {
         (
-            ieee_exponent as i32 - offset as i32 - FLOAT_MANTISSA_BITS as i32 - 2,
+            ieee_exponent as i32 - bias as i32 - FLOAT_MANTISSA_BITS as i32 - 2,
             (1u32 << FLOAT_MANTISSA_BITS) | ieee_mantissa,
         )
     };
@@ -217,11 +217,8 @@ pub fn f2d(ieee_mantissa: u32, ieee_exponent: u32) -> FloatingDecimal32 {
     // Step 2: Determine the interval of legal decimal representations.
     let mv = 4 * m2;
     let mp = 4 * m2 + 2;
-    let mm = 4 * m2 - if m2 != (1u32 << FLOAT_MANTISSA_BITS) || ieee_exponent <= 1 {
-        2
-    } else {
-        1
-    };
+    let mm_shift = (m2 != (1u32 << FLOAT_MANTISSA_BITS) || ieee_exponent <= 1) as u32;
+    let mm = 4 * m2 - 1 - mm_shift;
 
     // Step 3: Convert to a decimal power base using 64-bit arithmetic.
     let mut vr: u32;
@@ -288,7 +285,7 @@ pub fn f2d(ieee_mantissa: u32, ieee_exponent: u32) -> FloatingDecimal32 {
     let output = if vm_is_trailing_zeros || vr_is_trailing_zeros {
         // General case, which happens rarely.
         while vp / 10 > vm / 10 {
-            vm_is_trailing_zeros &= vm % 10 == 0;
+            vm_is_trailing_zeros &= vm - (vm / 10) * 10 == 0;
             vr_is_trailing_zeros &= last_removed_digit == 0;
             last_removed_digit = (vr % 10) as u8;
             vr /= 10;
