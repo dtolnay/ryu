@@ -48,9 +48,15 @@ fn pow5_factor(mut value: u64) -> i32 {
 }
 
 // Returns true if value is divisible by 5^p.
-fn multiple_of_power_of_5(value: u64, p: i32) -> bool {
+fn multiple_of_power_of_5(value: u64, p: u32) -> bool {
     // I tried a case distinction on p, but there was no performance difference.
-    pow5_factor(value) >= p
+    pow5_factor(value) >= p as i32
+}
+
+// Returns true if value is divisible by 2^p.
+fn multiple_of_power_of_2(value: u64, p: u32) -> bool {
+    // return __builtin_ctz(value) >= p;
+    (value & ((1u64 << (p - 1)) - 1)) == 0
 }
 
 fn mul_shift(m: u64, mul: &(u64, u64), j: u32) -> u64 {
@@ -143,7 +149,7 @@ pub fn d2d(ieee_mantissa: u64, ieee_exponent: u32) -> FloatingDecimal64 {
     // Step 2: Determine the interval of legal decimal representations.
     let mv = 4 * m2;
     // Implicit bool -> int conversion. True is 1, false is 0.
-    let mm_shift = ((m2 != (1u64 << DOUBLE_MANTISSA_BITS)) || (ieee_exponent <= 1)) as u32;
+    let mm_shift = (ieee_mantissa != 0 || ieee_exponent <= 1) as u32;
     // We would compute mp and mm like this:
     // uint64_t mp = 4 * m2 + 2;
     // uint64_t mm = mv - 1 - mm_shift;
@@ -158,10 +164,10 @@ pub fn d2d(ieee_mantissa: u64, ieee_exponent: u32) -> FloatingDecimal64 {
     if e2 >= 0 {
         // I tried special-casing q == 0, but there was no effect on performance.
         // This expression is slightly faster than max(0, log10_pow2(e2) - 1).
-        let q = log10_pow2(e2) - (e2 > 3) as i32;
-        e10 = q;
-        let k = DOUBLE_POW5_INV_BITCOUNT + pow5bits(q) as i32 - 1;
-        let i = -e2 + q + k;
+        let q = (log10_pow2(e2) - (e2 > 3) as i32) as u32;
+        e10 = q as i32;
+        let k = DOUBLE_POW5_INV_BITCOUNT + pow5bits(q as i32) as i32 - 1;
+        let i = -e2 + q as i32 + k;
         vr = mul_shift_all(
             m2,
             unsafe { DOUBLE_POW5_INV_SPLIT.get_unchecked(q as usize) },
@@ -186,11 +192,11 @@ pub fn d2d(ieee_mantissa: u64, ieee_exponent: u32) -> FloatingDecimal64 {
         }
     } else {
         // This expression is slightly faster than max(0, log10_pow5(-e2) - 1).
-        let q = log10_pow5(-e2) - (-e2 > 1) as i32;
-        e10 = q + e2;
-        let i = -e2 - q;
+        let q = (log10_pow5(-e2) - (-e2 > 1) as i32) as u32;
+        e10 = q as i32 + e2;
+        let i = -e2 - q as i32;
         let k = pow5bits(i) as i32 - DOUBLE_POW5_BITCOUNT;
-        let j = q - k;
+        let j = q as i32 - k;
         vr = mul_shift_all(
             m2,
             unsafe { DOUBLE_POW5_SPLIT.get_unchecked(i as usize) },
@@ -217,7 +223,7 @@ pub fn d2d(ieee_mantissa: u64, ieee_exponent: u32) -> FloatingDecimal64 {
             // <=> ntz(mv) >= q-1    (e2 is negative and -e2 >= q)
             // <=> (mv & ((1 << (q-1)) - 1)) == 0
             // We also need to make sure that the left shift does not overflow.
-            vr_is_trailing_zeros = (mv & ((1u64 << (q - 1)) - 1)) == 0;
+            vr_is_trailing_zeros = multiple_of_power_of_2(mv, q);
         }
     }
 
@@ -418,7 +424,7 @@ pub unsafe fn d2s_buffered_n(f: f64, result: *mut u8) -> usize {
     let bits = f.to_bits().to_le();
 
     // Decode bits into sign, mantissa, and exponent.
-    let sign = ((bits >> (DOUBLE_MANTISSA_BITS + DOUBLE_EXPONENT_BITS)) & 1) != 0;
+    let ieee_sign = ((bits >> (DOUBLE_MANTISSA_BITS + DOUBLE_EXPONENT_BITS)) & 1) != 0;
     let ieee_mantissa = bits & ((1u64 << DOUBLE_MANTISSA_BITS) - 1);
     let ieee_exponent =
         (bits >> DOUBLE_MANTISSA_BITS) as u32 & ((1u32 << DOUBLE_EXPONENT_BITS) - 1);
@@ -426,9 +432,9 @@ pub unsafe fn d2s_buffered_n(f: f64, result: *mut u8) -> usize {
     if ieee_exponent == ((1u32 << DOUBLE_EXPONENT_BITS) - 1)
         || (ieee_exponent == 0 && ieee_mantissa == 0)
     {
-        return copy_special_str(result, sign);
+        return copy_special_str(result, ieee_sign);
     }
 
     let v = d2d(ieee_mantissa, ieee_exponent);
-    to_chars(v, sign, result)
+    to_chars(v, ieee_sign, result)
 }
