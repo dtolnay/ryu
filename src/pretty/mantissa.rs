@@ -3,7 +3,7 @@ use core::ptr;
 use digit_table::*;
 
 #[cfg_attr(feature = "no-panic", inline)]
-pub unsafe fn write_mantissa_long(mut output: u64, mut result: *mut u8) {
+pub(crate) unsafe fn write_mantissa_long(mut output: u64, mut result: *mut u8) {
     if (output >> 32) != 0 {
         // One expensive 64-bit division.
         let mut output2 = (output - 100_000_000 * (output / 100_000_000)) as u32;
@@ -26,7 +26,7 @@ pub unsafe fn write_mantissa_long(mut output: u64, mut result: *mut u8) {
 }
 
 #[cfg_attr(feature = "no-panic", inline)]
-pub unsafe fn write_mantissa(mut output: u32, mut result: *mut u8) {
+pub(crate) unsafe fn write_mantissa(mut output: u32, mut result: *mut u8) {
     while output >= 10_000 {
         let c = (output - 10_000 * (output / 10_000)) as u32;
         output /= 10_000;
