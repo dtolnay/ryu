@@ -2,6 +2,9 @@ use core::{mem, str};
 
 use pretty;
 
+#[cfg(feature = "no-panic")]
+use no_panic::no_panic;
+
 #[derive(Copy, Clone)]
 pub struct Buffer {
     bytes: [u8; 24],
@@ -9,12 +12,14 @@ pub struct Buffer {
 
 impl Buffer {
     #[inline]
+    #[cfg_attr(feature = "no-panic", no_panic)]
     pub fn new() -> Self {
         Buffer {
             bytes: unsafe { mem::uninitialized() },
         }
     }
 
+    #[cfg_attr(feature = "no-panic", no_panic)]
     pub fn format<F: Float>(&mut self, f: F) -> &str {
         f.write_to_ryu_buffer(self)
     }
@@ -22,6 +27,7 @@ impl Buffer {
 
 impl Default for Buffer {
     #[inline]
+    #[cfg_attr(feature = "no-panic", no_panic)]
     fn default() -> Self {
         Buffer::new()
     }
@@ -34,6 +40,7 @@ pub trait Float: Sealed {
 
 impl Float for f32 {
     #[inline]
+    #[cfg_attr(feature = "no-panic", no_panic)]
     fn write_to_ryu_buffer(self, buffer: &mut Buffer) -> &str {
         unsafe {
             let n = pretty::f2s_buffered_n(self, &mut buffer.bytes[0]);
@@ -46,6 +53,7 @@ impl Float for f32 {
 
 impl Float for f64 {
     #[inline]
+    #[cfg_attr(feature = "no-panic", no_panic)]
     fn write_to_ryu_buffer(self, buffer: &mut Buffer) -> &str {
         unsafe {
             let n = pretty::d2s_buffered_n(self, &mut buffer.bytes[0]);

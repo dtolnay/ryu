@@ -8,7 +8,11 @@ use self::mantissa::*;
 use d2s::{self, *};
 use f2s::{self, *};
 
+#[cfg(feature = "no-panic")]
+use no_panic::no_panic;
+
 #[must_use]
+#[cfg_attr(feature = "no-panic", no_panic)]
 pub unsafe fn d2s_buffered_n(f: f64, result: *mut u8) -> usize {
     let bits = f.to_bits().to_le();
     let sign = ((bits >> (DOUBLE_MANTISSA_BITS + DOUBLE_EXPONENT_BITS)) & 1) != 0;
@@ -80,6 +84,7 @@ pub unsafe fn d2s_buffered_n(f: f64, result: *mut u8) -> usize {
 }
 
 #[must_use]
+#[cfg_attr(feature = "no-panic", no_panic)]
 pub unsafe fn f2s_buffered_n(f: f32, result: *mut u8) -> usize {
     let bits = f.to_bits().to_le();
     let sign = ((bits >> (FLOAT_MANTISSA_BITS + FLOAT_EXPONENT_BITS)) & 1) != 0;

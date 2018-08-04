@@ -117,6 +117,7 @@ static FLOAT_POW5_SPLIT: [u64; 47] = [
     2019483917365790221,
 ];
 
+#[cfg_attr(feature = "no-panic", inline)]
 fn pow5_factor(mut value: u32) -> i32 {
     let mut count = 0i32;
     loop {
@@ -132,12 +133,14 @@ fn pow5_factor(mut value: u32) -> i32 {
 }
 
 // Returns true if value is divisible by 5^p.
+#[cfg_attr(feature = "no-panic", inline)]
 fn multiple_of_power_of_5(value: u32, p: i32) -> bool {
     pow5_factor(value) >= p
 }
 
 // It seems to be slightly faster to avoid uint128_t here, although the
 // generated code for uint128_t looks slightly nicer.
+#[cfg_attr(feature = "no-panic", inline)]
 fn mul_shift(m: u32, factor: u64, shift: i32) -> u32 {
     debug_assert!(shift > 32);
 
@@ -154,16 +157,19 @@ fn mul_shift(m: u32, factor: u64, shift: i32) -> u32 {
     shifted_sum as u32
 }
 
+#[cfg_attr(feature = "no-panic", inline)]
 fn mul_pow5_inv_div_pow2(m: u32, q: u32, j: i32) -> u32 {
     debug_assert!(q < FLOAT_POW5_INV_SPLIT.len() as u32);
     unsafe { mul_shift(m, *FLOAT_POW5_INV_SPLIT.get_unchecked(q as usize), j) }
 }
 
+#[cfg_attr(feature = "no-panic", inline)]
 fn mul_pow5_div_pow2(m: u32, i: u32, j: i32) -> u32 {
     debug_assert!(i < FLOAT_POW5_SPLIT.len() as u32);
     unsafe { mul_shift(m, *FLOAT_POW5_SPLIT.get_unchecked(i as usize), j) }
 }
 
+#[cfg_attr(feature = "no-panic", inline)]
 pub fn decimal_length(v: u32) -> u32 {
     // Function precondition: v is not a 10-digit number.
     // (9 digits are sufficient for round-tripping.)
@@ -196,6 +202,7 @@ pub struct FloatingDecimal32 {
     pub exponent: i32,
 }
 
+#[cfg_attr(feature = "no-panic", inline)]
 pub fn f2d(ieee_mantissa: u32, ieee_exponent: u32) -> FloatingDecimal32 {
     let bias = (1u32 << (FLOAT_EXPONENT_BITS - 1)) - 1;
 
@@ -330,6 +337,7 @@ pub fn f2d(ieee_mantissa: u32, ieee_exponent: u32) -> FloatingDecimal32 {
     }
 }
 
+#[cfg_attr(feature = "no-panic", inline)]
 unsafe fn to_chars(v: FloatingDecimal32, sign: bool, result: *mut u8) -> usize {
     // Step 5: Print the decimal representation.
     let mut index = 0isize;

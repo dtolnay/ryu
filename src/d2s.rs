@@ -33,6 +33,7 @@ pub const DOUBLE_EXPONENT_BITS: u32 = 11;
 const DOUBLE_POW5_INV_BITCOUNT: i32 = 122;
 const DOUBLE_POW5_BITCOUNT: i32 = 121;
 
+#[cfg_attr(feature = "no-panic", inline)]
 fn pow5_factor(mut value: u64) -> i32 {
     let mut count = 0i32;
     loop {
@@ -48,23 +49,27 @@ fn pow5_factor(mut value: u64) -> i32 {
 }
 
 // Returns true if value is divisible by 5^p.
+#[cfg_attr(feature = "no-panic", inline)]
 fn multiple_of_power_of_5(value: u64, p: u32) -> bool {
     // I tried a case distinction on p, but there was no performance difference.
     pow5_factor(value) >= p as i32
 }
 
 // Returns true if value is divisible by 2^p.
+#[cfg_attr(feature = "no-panic", inline)]
 fn multiple_of_power_of_2(value: u64, p: u32) -> bool {
     // return __builtin_ctz(value) >= p;
     (value & ((1u64 << (p - 1)) - 1)) == 0
 }
 
+#[cfg_attr(feature = "no-panic", inline)]
 fn mul_shift(m: u64, mul: &(u64, u64), j: u32) -> u64 {
     let b0 = m as u128 * mul.0 as u128;
     let b2 = m as u128 * mul.1 as u128;
     (((b0 >> 64) + b2) >> (j - 64)) as u64
 }
 
+#[cfg_attr(feature = "no-panic", inline)]
 fn mul_shift_all(
     m: u64,
     mul: &(u64, u64),
@@ -78,6 +83,7 @@ fn mul_shift_all(
     mul_shift(4 * m, mul, j)
 }
 
+#[cfg_attr(feature = "no-panic", inline)]
 pub fn decimal_length(v: u64) -> u32 {
     // This is slightly faster than a loop.
     // The average output length is 16.38 digits, so we check high-to-low.
@@ -128,6 +134,7 @@ pub struct FloatingDecimal64 {
     pub exponent: i32,
 }
 
+#[cfg_attr(feature = "no-panic", inline)]
 pub fn d2d(ieee_mantissa: u64, ieee_exponent: u32) -> FloatingDecimal64 {
     let bias = (1u32 << (DOUBLE_EXPONENT_BITS - 1)) - 1;
 
@@ -279,6 +286,7 @@ pub fn d2d(ieee_mantissa: u64, ieee_exponent: u32) -> FloatingDecimal64 {
     }
 }
 
+#[cfg_attr(feature = "no-panic", inline)]
 unsafe fn to_chars(v: FloatingDecimal64, sign: bool, result: *mut u8) -> usize {
     // Step 5: Print the decimal representation.
     let mut index = 0isize;
