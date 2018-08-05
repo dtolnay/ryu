@@ -2,6 +2,7 @@
 name = "ryu"
 version = "0.0.0"
 authors = ["David Tolnay <dtolnay@gmail.com>"]
+build = "build.rs"
 publish = false
 
 [dependencies]

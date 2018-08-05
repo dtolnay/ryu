@@ -20,6 +20,8 @@ mod d2s;
 mod d2s_full_table;
 mod digit_table;
 mod f2s;
+#[cfg(not(integer128))]
+mod mulshift128;
 mod pretty;
 
 pub use buffer::{Buffer, Float};
