@@ -225,9 +225,13 @@ pub fn d2d(ieee_mantissa: u64, ieee_exponent: u32) -> FloatingDecimal64 {
         vr = mul_shift_all(
             m2,
             #[cfg(feature = "small")]
-            unsafe { &compute_inv_pow5(q) },
+            unsafe {
+                &compute_inv_pow5(q)
+            },
             #[cfg(not(feature = "small"))]
-            unsafe { DOUBLE_POW5_INV_SPLIT.get_unchecked(q as usize) },
+            unsafe {
+                DOUBLE_POW5_INV_SPLIT.get_unchecked(q as usize)
+            },
             i as u32,
             &mut vp,
             &mut vm,
@@ -257,9 +261,13 @@ pub fn d2d(ieee_mantissa: u64, ieee_exponent: u32) -> FloatingDecimal64 {
         vr = mul_shift_all(
             m2,
             #[cfg(feature = "small")]
-            unsafe { &compute_pow5(i as u32) },
+            unsafe {
+                &compute_pow5(i as u32)
+            },
             #[cfg(not(feature = "small"))]
-            unsafe { DOUBLE_POW5_SPLIT.get_unchecked(i as usize) },
+            unsafe {
+                DOUBLE_POW5_SPLIT.get_unchecked(i as usize)
+            },
             j as u32,
             &mut vp,
             &mut vm,
