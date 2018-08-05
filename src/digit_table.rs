@@ -20,7 +20,7 @@
 
 // A table of all two-digit numbers. This is used to speed up decimal digit
 // generation by copying pairs of digits into the final output.
-pub(crate) static DIGIT_TABLE: [u8; 200] = *b"\
+pub static DIGIT_TABLE: [u8; 200] = *b"\
     0001020304050607080910111213141516171819\
     2021222324252627282930313233343536373839\
     4041424344454647484950515253545556575859\

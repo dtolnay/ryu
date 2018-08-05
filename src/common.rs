@@ -22,7 +22,7 @@ use core::ptr;
 
 // Returns e == 0 ? 1 : ceil(log_2(5^e)).
 #[cfg_attr(feature = "no-panic", inline)]
-pub(crate) fn pow5bits(e: i32) -> u32 {
+pub fn pow5bits(e: i32) -> u32 {
     // This approximation works up to the point that the multiplication overflows at e = 3529.
     // If the multiplication were done in 64 bits, it would fail at 5^4004 which is just greater
     // than 2^9297.
@@ -33,7 +33,7 @@ pub(crate) fn pow5bits(e: i32) -> u32 {
 
 // Returns floor(log_10(2^e)).
 #[cfg_attr(feature = "no-panic", inline)]
-pub(crate) fn log10_pow2(e: i32) -> i32 {
+pub fn log10_pow2(e: i32) -> i32 {
     // The first value this approximation fails for is 2^1651 which is just greater than 10^297.
     debug_assert!(e >= 0);
     debug_assert!(e <= 1650);
@@ -42,7 +42,7 @@ pub(crate) fn log10_pow2(e: i32) -> i32 {
 
 // Returns floor(log_10(5^e)).
 #[cfg_attr(feature = "no-panic", inline)]
-pub(crate) fn log10_pow5(e: i32) -> i32 {
+pub fn log10_pow5(e: i32) -> i32 {
     // The first value this approximation fails for is 5^2621 which is just greater than 10^1832.
     debug_assert!(e >= 0);
     debug_assert!(e <= 2620);
@@ -50,7 +50,7 @@ pub(crate) fn log10_pow5(e: i32) -> i32 {
 }
 
 #[cfg_attr(feature = "no-panic", inline)]
-pub(crate) unsafe fn copy_special_str(result: *mut u8, sign: bool) -> usize {
+pub unsafe fn copy_special_str(result: *mut u8, sign: bool) -> usize {
     if sign {
         ptr::write(result, b'-');
     }

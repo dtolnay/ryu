@@ -29,8 +29,8 @@ use mulshift128::*;
 #[cfg(feature = "no-panic")]
 use no_panic::no_panic;
 
-pub(crate) const DOUBLE_MANTISSA_BITS: u32 = 52;
-pub(crate) const DOUBLE_EXPONENT_BITS: u32 = 11;
+pub const DOUBLE_MANTISSA_BITS: u32 = 52;
+pub const DOUBLE_EXPONENT_BITS: u32 = 11;
 
 const DOUBLE_POW5_INV_BITCOUNT: i32 = 122;
 const DOUBLE_POW5_BITCOUNT: i32 = 121;
@@ -128,7 +128,7 @@ fn mul_shift_all(
 }
 
 #[cfg_attr(feature = "no-panic", inline)]
-pub(crate) fn decimal_length(v: u64) -> u32 {
+pub fn decimal_length(v: u64) -> u32 {
     // This is slightly faster than a loop.
     // The average output length is 16.38 digits, so we check high-to-low.
     // Function precondition: v is not an 18, 19, or 20-digit number.
@@ -173,13 +173,13 @@ pub(crate) fn decimal_length(v: u64) -> u32 {
 }
 
 // A floating decimal representing m * 10^e.
-pub(crate) struct FloatingDecimal64 {
+pub struct FloatingDecimal64 {
     pub mantissa: u64,
     pub exponent: i32,
 }
 
 #[cfg_attr(feature = "no-panic", inline)]
-pub(crate) fn d2d(ieee_mantissa: u64, ieee_exponent: u32) -> FloatingDecimal64 {
+pub fn d2d(ieee_mantissa: u64, ieee_exponent: u32) -> FloatingDecimal64 {
     let bias = (1u32 << (DOUBLE_EXPONENT_BITS - 1)) - 1;
 
     let (e2, m2) = if ieee_exponent == 0 {
