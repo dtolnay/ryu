@@ -1,4 +1,4 @@
-use core::{mem, str};
+use core::{mem, slice, str};
 
 use pretty;
 
@@ -43,9 +43,15 @@ impl Buffer {
     /// [`is_finite`]: https://doc.rust-lang.org/std/primitive.f64.html#method.is_finite
     /// [`is_nan`]: https://doc.rust-lang.org/std/primitive.f64.html#method.is_nan
     /// [`is_infinite`]: https://doc.rust-lang.org/std/primitive.f64.html#method.is_infinite
+    #[inline]
     #[cfg_attr(feature = "no-panic", no_panic)]
     pub fn format<F: Float>(&mut self, f: F) -> &str {
-        f.write_to_ryu_buffer(self)
+        unsafe {
+            let n = f.write_to_ryu_buffer(&mut self.bytes[0]);
+            debug_assert!(n <= self.bytes.len());
+            let slice = slice::from_raw_parts(&self.bytes[0], n);
+            str::from_utf8_unchecked(slice)
+        }
     }
 }
 
@@ -65,32 +71,22 @@ impl Default for Buffer {
 pub trait Float: Sealed {
     // Not public API.
     #[doc(hidden)]
-    fn write_to_ryu_buffer(self, buffer: &mut Buffer) -> &str;
+    unsafe fn write_to_ryu_buffer(self, result: *mut u8) -> usize;
 }
 
 impl Float for f32 {
     #[inline]
     #[cfg_attr(feature = "no-panic", no_panic)]
-    fn write_to_ryu_buffer(self, buffer: &mut Buffer) -> &str {
-        unsafe {
-            let n = pretty::f2s_buffered_n(self, &mut buffer.bytes[0]);
-            debug_assert!(n <= buffer.bytes.len());
-            let slice = buffer.bytes.get_unchecked(..n);
-            str::from_utf8_unchecked(slice)
-        }
+    unsafe fn write_to_ryu_buffer(self, result: *mut u8) -> usize {
+        pretty::f2s_buffered_n(self, result)
     }
 }
 
 impl Float for f64 {
     #[inline]
     #[cfg_attr(feature = "no-panic", no_panic)]
-    fn write_to_ryu_buffer(self, buffer: &mut Buffer) -> &str {
-        unsafe {
-            let n = pretty::d2s_buffered_n(self, &mut buffer.bytes[0]);
-            debug_assert!(n <= buffer.bytes.len());
-            let slice = buffer.bytes.get_unchecked(..n);
-            str::from_utf8_unchecked(slice)
-        }
+    unsafe fn write_to_ryu_buffer(self, result: *mut u8) -> usize {
+        pretty::d2s_buffered_n(self, result)
     }
 }
 
