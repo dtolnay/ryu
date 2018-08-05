@@ -28,9 +28,7 @@ pub unsafe fn d2s_buffered_n(f: f64, result: *mut u8) -> usize {
         index += 1;
     }
 
-    if ieee_exponent == ((1u32 << DOUBLE_EXPONENT_BITS) - 1)
-        || (ieee_exponent == 0 && ieee_mantissa == 0)
-    {
+    if ieee_exponent == 0 && ieee_mantissa == 0 {
         ptr::copy_nonoverlapping(b"0.0".as_ptr(), result.offset(index), 3);
         return sign as usize + 3;
     }
@@ -100,9 +98,7 @@ pub unsafe fn f2s_buffered_n(f: f32, result: *mut u8) -> usize {
         index += 1;
     }
 
-    if ieee_exponent == ((1u32 << FLOAT_EXPONENT_BITS) - 1)
-        || (ieee_exponent == 0 && ieee_mantissa == 0)
-    {
+    if ieee_exponent == 0 && ieee_mantissa == 0 {
         ptr::copy_nonoverlapping(b"0.0".as_ptr(), result.offset(index), 3);
         return sign as usize + 3;
     }
