@@ -39,8 +39,8 @@ fn test_exhaustive() {
                     continue;
                 }
                 let n = unsafe { ryu::f2s_buffered_n(f, &mut bytes[0]) };
-                assert_eq!(f, str::from_utf8(&bytes[..n]).unwrap().parse().unwrap());
-                assert_eq!(f, buffer.format(f).parse().unwrap());
+                assert_eq!(Ok(Ok(f)), str::from_utf8(&bytes[..n]).map(str::parse));
+                assert_eq!(Ok(f), buffer.format(f).parse());
             }
 
             let increment = (max - min + 1) as usize;
