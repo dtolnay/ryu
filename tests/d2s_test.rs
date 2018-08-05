@@ -28,7 +28,7 @@ use std::{f64, str};
 
 fn print(f: f64) -> String {
     let mut bytes = [0u8; 24];
-    let n = unsafe { ryu::d2s_buffered_n(f, &mut bytes[0]) };
+    let n = unsafe { ryu::raw::d2s_buffered_n(f, &mut bytes[0]) };
     let s = str::from_utf8(&bytes[..n]).unwrap();
     s.to_owned()
 }
@@ -56,7 +56,7 @@ fn test_random() {
     let mut buffer = ryu::Buffer::new();
     for _ in 0..1000000 {
         let f = rand::random();
-        let n = unsafe { ryu::d2s_buffered_n(f, &mut bytes[0]) };
+        let n = unsafe { ryu::raw::d2s_buffered_n(f, &mut bytes[0]) };
         assert_eq!(f, str::from_utf8(&bytes[..n]).unwrap().parse().unwrap());
         assert_eq!(f, buffer.format(f).parse().unwrap());
     }

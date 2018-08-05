@@ -28,5 +28,8 @@ mod mulshift128;
 mod pretty;
 
 pub use buffer::{Buffer, Float};
-pub use d2s::d2s_buffered_n;
-pub use f2s::f2s_buffered_n;
+
+pub mod raw {
+    pub use d2s::d2s_buffered_n;
+    pub use f2s::f2s_buffered_n;
+}
