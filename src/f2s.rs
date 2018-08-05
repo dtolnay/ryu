@@ -18,7 +18,7 @@
 // is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 // KIND, either express or implied.
 
-use core::ptr;
+use core::{mem, ptr};
 
 use common::*;
 use digit_table::*;
@@ -431,7 +431,7 @@ unsafe fn to_chars(v: FloatingDecimal32, sign: bool, result: *mut u8) -> usize {
 #[cfg_attr(feature = "no-panic", no_panic)]
 pub unsafe fn f2s_buffered_n(f: f32, result: *mut u8) -> usize {
     // Step 1: Decode the floating-point number, and unify normalized and subnormal cases.
-    let bits = f.to_bits().to_le();
+    let bits = mem::transmute::<f32, u32>(f).to_le();
 
     // Decode bits into sign, mantissa, and exponent.
     let sign = ((bits >> (FLOAT_MANTISSA_BITS + FLOAT_EXPONENT_BITS)) & 1) != 0;
