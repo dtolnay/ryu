@@ -131,7 +131,7 @@ pub unsafe fn f2s_buffered_n(f: f32, result: *mut u8) -> usize {
         index as usize + length as usize + 1
     } else if -6 < kk && kk <= 0 {
         // 1234e-6 -> 0.001234
-        *result = b'0';
+        *result.offset(index) = b'0';
         *result.offset(index + 1) = b'.';
         let offset = 2 - kk;
         for i in 2..offset {
