@@ -28,6 +28,21 @@ impl Buffer {
         }
     }
 
+    /// Print a floating point number into this buffer and return a reference to
+    /// its string representation within the buffer.
+    ///
+    /// # Special cases
+    ///
+    /// This function **does not** check for NaN or infinity. If the input
+    /// number is not a finite float, the printed representation will be some
+    /// correctly formatted but unspecified numerical value.
+    ///
+    /// Please check [`is_finite`] yourself before calling this function, or
+    /// check [`is_nan`] and [`is_infinite`] and handle those cases yourself.
+    ///
+    /// [`is_finite`]: https://doc.rust-lang.org/std/primitive.f64.html#method.is_finite
+    /// [`is_nan`]: https://doc.rust-lang.org/std/primitive.f64.html#method.is_nan
+    /// [`is_infinite`]: https://doc.rust-lang.org/std/primitive.f64.html#method.is_infinite
     #[cfg_attr(feature = "no-panic", no_panic)]
     pub fn format<F: Float>(&mut self, f: F) -> &str {
         f.write_to_ryu_buffer(self)
