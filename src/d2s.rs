@@ -486,6 +486,32 @@ unsafe fn to_chars(v: FloatingDecimal64, sign: bool, result: *mut u8) -> usize {
     index as usize
 }
 
+/// Print f64 to the given buffer and return number of bytes written.
+///
+/// At most 24 bytes will be written.
+///
+/// ## Special cases
+///
+/// This function represents any NaN as `NaN`, positive infinity as `Infinity`,
+/// and negative infinity as `-Infinity`.
+///
+/// ## Safety
+///
+/// The `result` pointer argument must point to sufficiently many writable bytes
+/// to hold Ryū's representation of `f`.
+///
+/// ## Example
+///
+/// ```rust
+/// let f = 1.234f64;
+///
+/// unsafe {
+///     let mut buffer: [u8; 24] = std::mem::uninitialized();
+///     let n = ryu::raw::d2s_buffered_n(f, &mut buffer[0]);
+///     let s = std::str::from_utf8_unchecked(&buffer[..n]);
+///     assert_eq!(s, "1.234E0");
+/// }
+/// ```
 #[cfg_attr(must_use_return, must_use)]
 #[cfg_attr(feature = "no-panic", no_panic)]
 pub unsafe fn d2s_buffered_n(f: f64, result: *mut u8) -> usize {

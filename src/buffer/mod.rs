@@ -5,6 +5,15 @@ use pretty;
 #[cfg(feature = "no-panic")]
 use no_panic::no_panic;
 
+/// Safe API for formatting floating point numbers to text.
+///
+/// ## Example
+///
+/// ```rust
+/// let mut buffer = ryu::Buffer::new();
+/// let printed = buffer.format(1.234);
+/// assert_eq!(printed, "1.234");
+/// ```
 #[derive(Copy, Clone)]
 pub struct Buffer {
     bytes: [u8; 24],
@@ -33,7 +42,13 @@ impl Default for Buffer {
     }
 }
 
+/// A floating point number, f32 or f64, that can be written into a
+/// [`ryu::Buffer`][Buffer].
+///
+/// This trait is sealed and cannot be implemented for types outside of the
+/// `ryu` crate.
 pub trait Float: Sealed {
+    // Not public API.
     #[doc(hidden)]
     fn write_to_ryu_buffer(self, buffer: &mut Buffer) -> &str;
 }
