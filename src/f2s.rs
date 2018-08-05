@@ -427,7 +427,7 @@ unsafe fn to_chars(v: FloatingDecimal32, sign: bool, result: *mut u8) -> usize {
     index as usize
 }
 
-#[must_use]
+#[cfg_attr(must_use_return, must_use)]
 #[cfg_attr(feature = "no-panic", no_panic)]
 pub unsafe fn f2s_buffered_n(f: f32, result: *mut u8) -> usize {
     // Step 1: Decode the floating-point number, and unify normalized and subnormal cases.

@@ -13,7 +13,7 @@ use f2s::*;
 #[cfg(feature = "no-panic")]
 use no_panic::no_panic;
 
-#[must_use]
+#[cfg_attr(must_use_return, must_use)]
 #[cfg_attr(feature = "no-panic", no_panic)]
 pub unsafe fn d2s_buffered_n(f: f64, result: *mut u8) -> usize {
     let bits = mem::transmute::<f64, u64>(f).to_le();
@@ -85,7 +85,7 @@ pub unsafe fn d2s_buffered_n(f: f64, result: *mut u8) -> usize {
     }
 }
 
-#[must_use]
+#[cfg_attr(must_use_return, must_use)]
 #[cfg_attr(feature = "no-panic", no_panic)]
 pub unsafe fn f2s_buffered_n(f: f32, result: *mut u8) -> usize {
     let bits = mem::transmute::<f32, u32>(f).to_le();
