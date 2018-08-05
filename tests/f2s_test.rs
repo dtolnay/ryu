@@ -61,25 +61,6 @@ fn test_random() {
     }
 }
 
-#[cfg(exhaustive)]
-#[test]
-fn test_exhaustive() {
-    let mut bytes = [0u8; 24];
-    let mut buffer = ryu::Buffer::new();
-    for u in 0..=u32::max_value() {
-        if u % 1000000 == 0 {
-            println!("{}", u);
-        }
-        let f = f32::from_bits(u);
-        if !f.is_finite() {
-            continue;
-        }
-        let n = unsafe { ryu::f2s_buffered_n(f, &mut bytes[0]) };
-        assert_eq!(f, str::from_utf8(&bytes[..n]).unwrap().parse().unwrap());
-        assert_eq!(f, buffer.format(f).parse().unwrap());
-    }
-}
-
 #[test]
 fn test_basic() {
     check!(0E0, 0.0);
