@@ -443,7 +443,7 @@ pub unsafe fn f2s_buffered_n(f: f32, result: *mut u8) -> usize {
     if ieee_exponent == ((1u32 << FLOAT_EXPONENT_BITS) - 1)
         || (ieee_exponent == 0 && ieee_mantissa == 0)
     {
-        return copy_special_str(result, sign);
+        return copy_special_str(result, sign, ieee_exponent != 0, ieee_mantissa != 0);
     }
 
     let v = f2d(ieee_mantissa, ieee_exponent);

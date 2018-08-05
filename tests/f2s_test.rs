@@ -68,6 +68,9 @@ fn test_basic() {
     check!(-0E0, -0.0);
     check!(1E0, 1.0);
     check!(-1E0, -1.0);
+    assert_eq!(print(f32::NAN), "NaN");
+    assert_eq!(print(f32::INFINITY), "Infinity");
+    assert_eq!(print(f32::NEG_INFINITY), "-Infinity");
 }
 
 #[test]

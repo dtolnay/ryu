@@ -501,7 +501,7 @@ pub unsafe fn d2s_buffered_n(f: f64, result: *mut u8) -> usize {
     if ieee_exponent == ((1u32 << DOUBLE_EXPONENT_BITS) - 1)
         || (ieee_exponent == 0 && ieee_mantissa == 0)
     {
-        return copy_special_str(result, ieee_sign);
+        return copy_special_str(result, ieee_sign, ieee_exponent != 0, ieee_mantissa != 0);
     }
 
     let v = d2d(ieee_mantissa, ieee_exponent);
