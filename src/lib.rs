@@ -17,7 +17,10 @@ extern crate no_panic;
 mod buffer;
 mod common;
 mod d2s;
+#[cfg(not(feature = "small"))]
 mod d2s_full_table;
+#[cfg(feature = "small")]
+mod d2s_small_table;
 mod digit_table;
 mod f2s;
 #[cfg(not(integer128))]

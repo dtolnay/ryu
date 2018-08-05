@@ -5,6 +5,13 @@ authors = ["David Tolnay <dtolnay@gmail.com>"]
 build = "build.rs"
 publish = false
 
+[features]
+# Use smaller lookup tables. Instead of storing every required power of
+# 5, only store every 26th entry, and compute intermediate values with a
+# multiplication. This reduces the lookup table size by about 10x (only
+# one case, and only f64) at the cost of some performance.
+small = []
+
 [dependencies]
 no-panic = { version = "0.1", optional = true }
 

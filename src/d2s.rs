@@ -21,7 +21,10 @@
 use core::{mem, ptr};
 
 use common::*;
+#[cfg(not(feature = "small"))]
 use d2s_full_table::*;
+#[cfg(feature = "small")]
+use d2s_small_table::*;
 use digit_table::*;
 #[cfg(not(integer128))]
 use mulshift128::*;
@@ -112,15 +115,15 @@ fn mul_shift_all(
     if mm_shift == 1 {
         let lo3 = lo.wrapping_sub(mul.0);
         let mid3 = mid.wrapping_sub(mul.1).wrapping_sub((lo3 > lo) as u64);
-        let hi3 = hi - (mid3 > mid) as u64;
+        let hi3 = hi.wrapping_sub((mid3 > mid) as u64);
         *vm = shiftright128(mid3, hi3, j - 64 - 1);
     } else {
         let lo3 = lo + lo;
-        let mid3 = mid + mid + (lo3 < lo) as u64;
-        let hi3 = hi + hi + (mid3 < mid) as u64;
-        let lo4 = lo3 - mul.0;
-        let mid4 = mid3 - mul.1 - (lo4 > lo3) as u64;
-        let hi4 = hi3 - (mid4 > mid3) as u64;
+        let mid3 = mid.wrapping_add(mid).wrapping_add((lo3 < lo) as u64);
+        let hi3 = hi.wrapping_add(hi).wrapping_add((mid3 < mid) as u64);
+        let lo4 = lo3.wrapping_sub(mul.0);
+        let mid4 = mid3.wrapping_sub(mul.1).wrapping_sub((lo4 > lo3) as u64);
+        let hi4 = hi3.wrapping_sub((mid4 > mid3) as u64);
         *vm = shiftright128(mid4, hi4, j - 64);
     }
 
@@ -221,6 +224,9 @@ pub fn d2d(ieee_mantissa: u64, ieee_exponent: u32) -> FloatingDecimal64 {
         let i = -e2 + q as i32 + k;
         vr = mul_shift_all(
             m2,
+            #[cfg(feature = "small")]
+            unsafe { &compute_inv_pow5(q) },
+            #[cfg(not(feature = "small"))]
             unsafe { DOUBLE_POW5_INV_SPLIT.get_unchecked(q as usize) },
             i as u32,
             &mut vp,
@@ -250,6 +256,9 @@ pub fn d2d(ieee_mantissa: u64, ieee_exponent: u32) -> FloatingDecimal64 {
         let j = q as i32 - k;
         vr = mul_shift_all(
             m2,
+            #[cfg(feature = "small")]
+            unsafe { &compute_pow5(i as u32) },
+            #[cfg(not(feature = "small"))]
             unsafe { DOUBLE_POW5_SPLIT.get_unchecked(i as usize) },
             j as u32,
             &mut vp,

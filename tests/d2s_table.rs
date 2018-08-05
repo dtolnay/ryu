@@ -28,131 +28,25 @@ mod common;
 #[path = "../src/d2s_full_table.rs"]
 mod d2s_full_table;
 
-use common::*;
+#[path = "../src/d2s_small_table.rs"]
+mod d2s_small_table;
+
+#[path = "../src/mulshift128.rs"]
+mod mulshift128;
+
 use d2s_full_table::*;
-
-static DOUBLE_POW5_TABLE: [u64; 26] = [
-    1,
-    5,
-    25,
-    125,
-    625,
-    3125,
-    15625,
-    78125,
-    390625,
-    1953125,
-    9765625,
-    48828125,
-    244140625,
-    1220703125,
-    6103515625,
-    30517578125,
-    152587890625,
-    762939453125,
-    3814697265625,
-    19073486328125,
-    95367431640625,
-    476837158203125,
-    2384185791015625,
-    11920928955078125,
-    59604644775390625,
-    298023223876953125,
-];
-
-static DOUBLE_POW5_SPLIT2: [(u64, u64); 13] = [
-    (0, 72057594037927936),
-    (10376293541461622784, 93132257461547851),
-    (15052517733678820785, 120370621524202240),
-    (6258995034005762182, 77787690973264271),
-    (14893927168346708332, 100538234169297439),
-    (4272820386026678563, 129942622070561240),
-    (7330497575943398595, 83973451344588609),
-    (18377130505971182927, 108533142064701048),
-    (10038208235822497557, 140275798336537794),
-    (7017903361312433648, 90651109995611182),
-    (6366496589810271835, 117163813585596168),
-    (9264989777501460624, 75715339914673581),
-    (17074144231291089770, 97859783203563123),
-];
-
-// Unfortunately, the results are sometimes off by one. We use an additional
-// lookup table to store those cases and adjust the result.
-static POW5_OFFSETS: [u32; 13] = [
-    0x00000000, 0x00000000, 0x00000000, 0x033c55be, 0x03db77d8, 0x0265ffb2, 0x00000800, 0x01a8ff56,
-    0x00000000, 0x0037a200, 0x00004000, 0x03fffffc, 0x00003ffe,
-];
-
-static DOUBLE_POW5_INV_SPLIT2: [(u64, u64); 13] = [
-    (1, 288230376151711744),
-    (7661987648932456967, 223007451985306231),
-    (12652048002903177473, 172543658669764094),
-    (5522544058086115566, 266998379490113760),
-    (3181575136763469022, 206579990246952687),
-    (4551508647133041040, 159833525776178802),
-    (1116074521063664381, 247330401473104534),
-    (17400360011128145022, 191362629322552438),
-    (9297997190148906106, 148059663038321393),
-    (11720143854957885429, 229111231347799689),
-    (15401709288678291155, 177266229209635622),
-    (3003071137298187333, 274306203439684434),
-    (17516772882021341108, 212234145163966538),
-];
-
-static POW5_INV_OFFSETS: [u32; 20] = [
-    0x51505404, 0x55054514, 0x45555545, 0x05511411, 0x00505010, 0x00000004, 0x00000000, 0x00000000,
-    0x55555040, 0x00505051, 0x00050040, 0x55554000, 0x51659559, 0x00001000, 0x15000010, 0x55455555,
-    0x41404051, 0x00001010, 0x00000014, 0x00000000,
-];
+use d2s_small_table::*;
 
 #[test]
 fn test_compute_pow5() {
     for (i, entry) in DOUBLE_POW5_SPLIT.iter().enumerate() {
-        assert_eq!(*entry, compute_pow5(i as u32));
+        assert_eq!(*entry, unsafe { compute_pow5(i as u32) }, "entry {}", i);
     }
 }
 
 #[test]
 fn test_compute_inv_pow5() {
     for (i, entry) in DOUBLE_POW5_INV_SPLIT.iter().enumerate() {
-        assert_eq!(*entry, compute_inv_pow5(i as u32));
+        assert_eq!(*entry, unsafe { compute_inv_pow5(i as u32) }, "entry {}", i);
     }
-}
-
-// Computes 5^i in the form required by Ryu.
-fn compute_pow5(i: u32) -> (u64, u64) {
-    let base = i / DOUBLE_POW5_TABLE.len() as u32;
-    let base2 = base * DOUBLE_POW5_TABLE.len() as u32;
-    let offset = i - base2;
-    let mul = DOUBLE_POW5_SPLIT2[base as usize];
-    if offset == 0 {
-        return mul;
-    }
-    let m = DOUBLE_POW5_TABLE[offset as usize];
-    let b0 = m as u128 * mul.0 as u128;
-    let b2 = m as u128 * mul.1 as u128;
-    let delta = pow5bits(i as i32) - pow5bits(base2 as i32);
-    let shifted_sum = (b0 >> delta)
-        + (b2 << (64 - delta))
-        + ((POW5_OFFSETS[base as usize] >> offset) & 1) as u128;
-    (shifted_sum as u64, (shifted_sum >> 64) as u64)
-}
-
-// Computes 5^-i in the form required by Ryu.
-fn compute_inv_pow5(i: u32) -> (u64, u64) {
-    let base = (i + DOUBLE_POW5_TABLE.len() as u32 - 1) / DOUBLE_POW5_TABLE.len() as u32;
-    let base2 = base * DOUBLE_POW5_TABLE.len() as u32;
-    let offset = base2 - i;
-    let mul = DOUBLE_POW5_INV_SPLIT2[base as usize]; // 1/5^base2
-    if offset == 0 {
-        return mul;
-    }
-    let m = DOUBLE_POW5_TABLE[offset as usize]; // 5^offset
-    let b0 = m as u128 * (mul.0 - 1) as u128;
-    let b2 = m as u128 * mul.1 as u128; // 1/5^base2 * 5^offset = 1/5^(base2-offset) = 1/5^i
-    let delta = pow5bits(base2 as i32) - pow5bits(i as i32);
-    let shifted_sum = ((b0 >> delta) + (b2 << (64 - delta)))
-        + 1
-        + ((POW5_INV_OFFSETS[(i / 16) as usize] >> ((i % 16) << 1)) & 3) as u128;
-    (shifted_sum as u64, (shifted_sum >> 64) as u64)
 }
