@@ -43,7 +43,12 @@ macro_rules! benchmark {
             let mut mv = MeanAndVariance::new();
             let mut throwaway = 0;
             for _ in 0..SAMPLES {
-                let $var = $ty::from_bits(rng.gen());
+                let $var = loop {
+                    let f = $ty::from_bits(rng.gen());
+                    if f.is_finite() {
+                        break f;
+                    }
+                };
 
                 let t1 = std::time::SystemTime::now();
                 for _ in 0..ITERATIONS {
