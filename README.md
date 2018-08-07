@@ -15,6 +15,9 @@ below. The safe API uses the same underlying Ryū algorithm but diverges from th
 formatting of the C implementation to produce more human-readable output, for
 example `0.3` rather than `3E-1`.
 
+*Requirements: this crate supports any compiler version back to rustc 1.15; it
+uses nothing from the Rust standard library so is usable from no_std crates.*
+
 [paper]: https://dl.acm.org/citation.cfm?id=3192369
 [upstream]: https://github.com/ulfjack/ryu/tree/2936e610f0909b036e857a43ded70e064f7cfc7f
 
