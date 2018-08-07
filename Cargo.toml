@@ -1,6 +1,6 @@
 [package]
 name = "ryu"
-version = "0.0.0"
+version = "0.2.0"
 authors = ["David Tolnay <dtolnay@gmail.com>"]
 license = "MIT/Apache-2.0"
 description = "Fast floating point to string conversion"
@@ -8,7 +8,6 @@ repository = "https://github.com/dtolnay/ryu"
 documentation = "https://docs.rs/ryu"
 readme = "README.md"
 build = "build.rs"
-publish = false
 
 [features]
 # Use smaller lookup tables. Instead of storing every required power of

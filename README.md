@@ -23,8 +23,7 @@ uses nothing from the Rust standard library so is usable from no_std crates.*
 
 ```toml
 [dependencies]
-# not yet published to crates.io
-ryu = { git = "https://github.com/dtolnay/ryu" }
+ryu = "0.2"
 ```
 
 ## Examples
