@@ -40,7 +40,7 @@ pub unsafe fn d2s_buffered_n(f: f64, result: *mut u8) -> usize {
     let kk = length + k; // 10^(kk-1) <= v < 10^kk
     debug_assert!(k >= -324);
 
-    if 0 <= k && kk <= 21 {
+    if 0 <= k && kk <= 16 {
         // 1234e7 -> 12340000000.0
         write_mantissa_long(v.mantissa, result.offset(index + length));
         for i in length..kk {
@@ -49,7 +49,7 @@ pub unsafe fn d2s_buffered_n(f: f64, result: *mut u8) -> usize {
         *result.offset(index + kk) = b'.';
         *result.offset(index + kk + 1) = b'0';
         index as usize + kk as usize + 2
-    } else if 0 < kk && kk <= 21 {
+    } else if 0 < kk && kk <= 16 {
         // 1234e-2 -> 12.34
         write_mantissa_long(v.mantissa, result.offset(index + length + 1));
         ptr::copy(result.offset(index + 1), result.offset(index), kk as usize);
@@ -110,7 +110,7 @@ pub unsafe fn f2s_buffered_n(f: f32, result: *mut u8) -> usize {
     let kk = length + k; // 10^(kk-1) <= v < 10^kk
     debug_assert!(k >= -45);
 
-    if 0 <= k && kk <= 21 {
+    if 0 <= k && kk <= 13 {
         // 1234e7 -> 12340000000.0
         write_mantissa(v.mantissa, result.offset(index + length));
         for i in length..kk {
@@ -119,7 +119,7 @@ pub unsafe fn f2s_buffered_n(f: f32, result: *mut u8) -> usize {
         *result.offset(index + kk) = b'.';
         *result.offset(index + kk + 1) = b'0';
         index as usize + kk as usize + 2
-    } else if 0 < kk && kk <= 21 {
+    } else if 0 < kk && kk <= 13 {
         // 1234e-2 -> 12.34
         write_mantissa(v.mantissa, result.offset(index + length + 1));
         ptr::copy(result.offset(index + 1), result.offset(index), kk as usize);
