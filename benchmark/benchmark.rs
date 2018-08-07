@@ -1,8 +1,6 @@
 extern crate rand;
 extern crate ryu;
 
-use std::mem;
-
 use rand::{Rng, SeedableRng};
 
 const SAMPLES: usize = 10000;
@@ -37,13 +35,13 @@ impl MeanAndVariance {
 }
 
 macro_rules! benchmark {
-    ($name:ident, |$var:ident: $ty:ident| $computation:expr) => {
+    ($name:ident, $ty:ident) => {
         fn $name() -> usize {
             let mut rng = rand::prng::XorShiftRng::from_seed([123u8; 16]);
             let mut mv = MeanAndVariance::new();
             let mut throwaway = 0;
             for _ in 0..SAMPLES {
-                let $var = loop {
+                let f = loop {
                     let f = $ty::from_bits(rng.gen());
                     if f.is_finite() {
                         break f;
@@ -52,7 +50,7 @@ macro_rules! benchmark {
 
                 let t1 = std::time::SystemTime::now();
                 for _ in 0..ITERATIONS {
-                    throwaway += $computation;
+                    throwaway += ryu::Buffer::new().format(f).len();
                 }
                 let duration = t1.elapsed().unwrap();
                 let nanos = duration.as_secs() * 1_000_000_000 + duration.subsec_nanos() as u64;
@@ -69,26 +67,13 @@ macro_rules! benchmark {
     };
 }
 
-benchmark!(original32, |f: f32| unsafe {
-    let mut buffer: [u8; 15] = mem::uninitialized();
-    ryu::raw::f2s_buffered_n(f, &mut buffer[0])
-});
-
-benchmark!(pretty32, |f: f32| ryu::Buffer::new().format(f).len());
-
-benchmark!(original64, |f: f64| unsafe {
-    let mut buffer: [u8; 24] = mem::uninitialized();
-    ryu::raw::d2s_buffered_n(f, &mut buffer[0])
-});
-
-benchmark!(pretty64, |f: f64| ryu::Buffer::new().format(f).len());
+benchmark!(pretty32, f32);
+benchmark!(pretty64, f64);
 
 fn main() {
     println!("{:>20}{:>9}", "Average", "Stddev");
     let mut throwaway = 0;
-    throwaway += original32();
     throwaway += pretty32();
-    throwaway += original64();
     throwaway += pretty64();
     if std::env::var_os("ryu-benchmark").is_some() {
         // Prevent the compiler from optimizing the code away.
