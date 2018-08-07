@@ -1,3 +1,34 @@
+//! Pure Rust implementation of Ryū, an algorithm to quickly convert floating
+//! point numbers to decimal strings.
+//!
+//! The PLDI'18 paper [*Ryū: fast float-to-string conversion*][paper] by Ulf
+//! Adams includes a complete correctness proof of the algorithm. The paper is
+//! available under the creative commons CC-BY-SA license.
+//!
+//! This Rust implementation is a line-by-line port of Ulf Adams' implementation
+//! in C, [https://github.com/ulfjack/ryu][upstream]. The [`ryu::raw`][raw]
+//! module exposes exactly the API and formatting of the C implementation as
+//! unsafe pure Rust functions. There is additionally a safe API as demonstrated
+//! in the example code below. The safe API uses the same underlying Ryū
+//! algorithm but diverges from the formatting of the C implementation to
+//! produce more human-readable output, for example `0.3` rather than `3E-1`.
+//!
+//! [paper]: https://dl.acm.org/citation.cfm?id=3192369
+//! [upstream]: https://github.com/ulfjack/ryu
+//! [raw]: raw/index.html
+//!
+//! # Examples
+//!
+//! ```rust
+//! extern crate ryu;
+//!
+//! fn main() {
+//!     let mut buffer = ryu::Buffer::new();
+//!     let printed = buffer.format(1.234);
+//!     assert_eq!(printed, "1.234");
+//! }
+//! ```
+
 #![no_std]
 #![cfg_attr(feature = "no-panic", feature(use_extern_macros))]
 #![cfg_attr(
