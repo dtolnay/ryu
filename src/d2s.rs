@@ -39,8 +39,8 @@ const DOUBLE_POW5_INV_BITCOUNT: i32 = 122;
 const DOUBLE_POW5_BITCOUNT: i32 = 121;
 
 #[cfg_attr(feature = "no-panic", inline)]
-fn pow5_factor(mut value: u64) -> i32 {
-    let mut count = 0i32;
+fn pow5_factor(mut value: u64) -> u32 {
+    let mut count = 0u32;
     loop {
         if value == 0 {
             return 0;
@@ -57,14 +57,14 @@ fn pow5_factor(mut value: u64) -> i32 {
 #[cfg_attr(feature = "no-panic", inline)]
 fn multiple_of_power_of_5(value: u64, p: u32) -> bool {
     // I tried a case distinction on p, but there was no performance difference.
-    pow5_factor(value) >= p as i32
+    pow5_factor(value) >= p
 }
 
 // Returns true if value is divisible by 2^p.
 #[cfg_attr(feature = "no-panic", inline)]
 fn multiple_of_power_of_2(value: u64, p: u32) -> bool {
-    // return __builtin_ctz(value) >= p;
-    (value & ((1u64 << (p - 1)) - 1)) == 0
+    // return __builtin_ctzll(value) >= p;
+    (value & ((1u64 << p) - 1)) == 0
 }
 
 #[cfg(integer128)]
@@ -238,6 +238,8 @@ pub fn d2d(ieee_mantissa: u64, ieee_exponent: u32) -> FloatingDecimal64 {
             mm_shift,
         );
         if q <= 21 {
+            // This should use q <= 22, but I think 21 is also safe. Smaller values
+            // may still be safe, but it's more difficult to reason about them.
             // Only one of mp, mv, and mm can be a multiple of 5, if any.
             if mv % 5 == 0 {
                 vr_is_trailing_zeros = multiple_of_power_of_5(mv, q);
@@ -275,10 +277,10 @@ pub fn d2d(ieee_mantissa: u64, ieee_exponent: u32) -> FloatingDecimal64 {
         );
         if q <= 1 {
             // {vr,vp,vm} is trailing zeros if {mv,mp,mm} has at least q trailing 0 bits.
-            // mv = 4 m2, so it always has at least two trailing 0 bits.
+            // mv = 4 * m2, so it always has at least two trailing 0 bits.
             vr_is_trailing_zeros = true;
             if accept_bounds {
-                // mm = mv - 1 - mmShift, so it has 1 trailing 0 bit iff mmShift == 1.
+                // mm = mv - 1 - mm_shift, so it has 1 trailing 0 bit iff mm_shift == 1.
                 vm_is_trailing_zeros = mm_shift == 1;
             } else {
                 // mp = mv + 2, so it always has at least one trailing 0 bit.
@@ -291,7 +293,7 @@ pub fn d2d(ieee_mantissa: u64, ieee_exponent: u32) -> FloatingDecimal64 {
             // <=> ntz(mv) >= q-1    (e2 is negative and -e2 >= q)
             // <=> (mv & ((1 << (q-1)) - 1)) == 0
             // We also need to make sure that the left shift does not overflow.
-            vr_is_trailing_zeros = multiple_of_power_of_2(mv, q);
+            vr_is_trailing_zeros = multiple_of_power_of_2(mv, q - 1);
         }
     }
 
@@ -321,7 +323,7 @@ pub fn d2d(ieee_mantissa: u64, ieee_exponent: u32) -> FloatingDecimal64 {
             }
         }
         if vr_is_trailing_zeros && last_removed_digit == 5 && vr % 2 == 0 {
-            // Round even if the exact numbers is .....50..0.
+            // Round even if the exact number is .....50..0.
             last_removed_digit = 4;
         }
         // We need to take vr+1 if vr is outside bounds or we need to round up.
@@ -339,7 +341,7 @@ pub fn d2d(ieee_mantissa: u64, ieee_exponent: u32) -> FloatingDecimal64 {
         // We need to take vr+1 if vr is outside bounds or we need to round up.
         vr + ((vr == vm) || (last_removed_digit >= 5)) as u64
     };
-    let exp = e10 + removed as i32 - 1;
+    let exp = e10 + removed as i32;
 
     FloatingDecimal64 {
         exponent: exp,
@@ -454,7 +456,7 @@ unsafe fn to_chars(v: FloatingDecimal64, sign: bool, result: *mut u8) -> usize {
     // Print the exponent.
     *result.offset(index) = b'E';
     index += 1;
-    let mut exp = v.exponent as i32 + olength as i32;
+    let mut exp = v.exponent as i32 + olength as i32 - 1;
     if exp < 0 {
         *result.offset(index) = b'-';
         index += 1;

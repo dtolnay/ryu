@@ -119,8 +119,8 @@ static FLOAT_POW5_SPLIT: [u64; 47] = [
 ];
 
 #[cfg_attr(feature = "no-panic", inline)]
-fn pow5_factor(mut value: u32) -> i32 {
-    let mut count = 0i32;
+fn pow5_factor(mut value: u32) -> u32 {
+    let mut count = 0u32;
     loop {
         if value == 0 {
             return 0;
@@ -135,8 +135,15 @@ fn pow5_factor(mut value: u32) -> i32 {
 
 // Returns true if value is divisible by 5^p.
 #[cfg_attr(feature = "no-panic", inline)]
-fn multiple_of_power_of_5(value: u32, p: i32) -> bool {
+fn multiple_of_power_of_5(value: u32, p: u32) -> bool {
     pow5_factor(value) >= p
+}
+
+// Returns true if value is divisible by 2^p.
+#[cfg_attr(feature = "no-panic", inline)]
+fn multiple_of_power_of_2(value: u32, p: u32) -> bool {
+    // return __builtin_ctz(value) >= p;
+    (value & ((1u32 << p) - 1)) == 0
 }
 
 // It seems to be slightly faster to avoid uint128_t here, although the
@@ -225,7 +232,8 @@ pub fn f2d(ieee_mantissa: u32, ieee_exponent: u32) -> FloatingDecimal32 {
     // Step 2: Determine the interval of legal decimal representations.
     let mv = 4 * m2;
     let mp = 4 * m2 + 2;
-    let mm_shift = (m2 != (1u32 << FLOAT_MANTISSA_BITS) || ieee_exponent <= 1) as u32;
+    // Implicit bool -> int conversion. True is 1, false is 0.
+    let mm_shift = (ieee_mantissa != 0 || ieee_exponent <= 1) as u32;
     let mm = 4 * m2 - 1 - mm_shift;
 
     // Step 3: Convert to a decimal power base using 64-bit arithmetic.
@@ -237,22 +245,23 @@ pub fn f2d(ieee_mantissa: u32, ieee_exponent: u32) -> FloatingDecimal32 {
     let mut vr_is_trailing_zeros = false;
     let mut last_removed_digit = 0u8;
     if e2 >= 0 {
-        let q = log10_pow2(e2);
-        e10 = q;
-        let k = FLOAT_POW5_INV_BITCOUNT + pow5bits(q) as i32 - 1;
-        let i = -e2 + q + k;
-        vr = mul_pow5_inv_div_pow2(mv, q as u32, i);
-        vp = mul_pow5_inv_div_pow2(mp, q as u32, i);
-        vm = mul_pow5_inv_div_pow2(mm, q as u32, i);
+        let q = log10_pow2(e2) as u32;
+        e10 = q as i32;
+        let k = FLOAT_POW5_INV_BITCOUNT + pow5bits(q as i32) as i32 - 1;
+        let i = -e2 + q as i32 + k;
+        vr = mul_pow5_inv_div_pow2(mv, q, i);
+        vp = mul_pow5_inv_div_pow2(mp, q, i);
+        vm = mul_pow5_inv_div_pow2(mm, q, i);
         if q != 0 && (vp - 1) / 10 <= vm / 10 {
             // We need to know one removed digit even if we are not going to loop below. We could use
             // q = X - 1 above, except that would require 33 bits for the result, and we've found that
             // 32-bit arithmetic is faster even on 64-bit machines.
-            let l = FLOAT_POW5_INV_BITCOUNT + pow5bits(q - 1) as i32 - 1;
+            let l = FLOAT_POW5_INV_BITCOUNT + pow5bits(q as i32 - 1) as i32 - 1;
             last_removed_digit =
-                (mul_pow5_inv_div_pow2(mv, (q - 1) as u32, -e2 + q - 1 + l) % 10) as u8;
+                (mul_pow5_inv_div_pow2(mv, q - 1, -e2 + q as i32 - 1 + l) % 10) as u8;
         }
         if q <= 9 {
+            // The largest power of 5 that fits in 24 bits is 5^10, but q<=9 seems to be safe as well.
             // Only one of mp, mv, and mm can be a multiple of 5, if any.
             if mv % 5 == 0 {
                 vr_is_trailing_zeros = multiple_of_power_of_5(mv, q);
@@ -263,28 +272,32 @@ pub fn f2d(ieee_mantissa: u32, ieee_exponent: u32) -> FloatingDecimal32 {
             }
         }
     } else {
-        let q = log10_pow5(-e2);
-        e10 = q + e2;
-        let i = -e2 - q;
+        let q = log10_pow5(-e2) as u32;
+        e10 = q as i32 + e2;
+        let i = -e2 - q as i32;
         let k = pow5bits(i) as i32 - FLOAT_POW5_BITCOUNT;
-        let mut j = q - k;
+        let mut j = q as i32 - k;
         vr = mul_pow5_div_pow2(mv, i as u32, j);
         vp = mul_pow5_div_pow2(mp, i as u32, j);
         vm = mul_pow5_div_pow2(mm, i as u32, j);
         if q != 0 && (vp - 1) / 10 <= vm / 10 {
-            j = q - 1 - (pow5bits(i + 1) as i32 - FLOAT_POW5_BITCOUNT);
+            j = q as i32 - 1 - (pow5bits(i + 1) as i32 - FLOAT_POW5_BITCOUNT);
             last_removed_digit = (mul_pow5_div_pow2(mv, (i + 1) as u32, j) % 10) as u8;
         }
         if q <= 1 {
-            vr_is_trailing_zeros = (!mv & 1) >= q as u32;
+            // {vr,vp,vm} is trailing zeros if {mv,mp,mm} has at least q trailing 0 bits.
+            // mv = 4 * m2, so it always has at least two trailing 0 bits.
+            vr_is_trailing_zeros = true;
             if accept_bounds {
-                vm_is_trailing_zeros = (!mm & 1) >= q as u32;
+                // mm = mv - 1 - mm_shift, so it has 1 trailing 0 bit iff mm_shift == 1.
+                vm_is_trailing_zeros = mm_shift == 1;
             } else {
+                // mp = mv + 2, so it always has at least one trailing 0 bit.
                 vp -= 1;
             }
         } else if q < 31 {
             // TODO(ulfjack): Use a tighter bound here.
-            vr_is_trailing_zeros = (mv & ((1u32 << (q - 1)) - 1)) == 0;
+            vr_is_trailing_zeros = multiple_of_power_of_2(mv, q - 1);
         }
     }
 
@@ -312,7 +325,7 @@ pub fn f2d(ieee_mantissa: u32, ieee_exponent: u32) -> FloatingDecimal32 {
             }
         }
         if vr_is_trailing_zeros && last_removed_digit == 5 && vr % 2 == 0 {
-            // Round down not up if the number ends in X50000.
+            // Round even if the exact number is .....50..0.
             last_removed_digit = 4;
         }
         // We need to take vr+1 if vr is outside bounds or we need to round up.
@@ -330,7 +343,7 @@ pub fn f2d(ieee_mantissa: u32, ieee_exponent: u32) -> FloatingDecimal32 {
         // We need to take vr+1 if vr is outside bounds or we need to round up.
         vr + ((vr == vm) || (last_removed_digit >= 5)) as u32
     };
-    let exp = e10 + removed as i32 - 1;
+    let exp = e10 + removed as i32;
 
     FloatingDecimal32 {
         exponent: exp,
@@ -405,7 +418,7 @@ unsafe fn to_chars(v: FloatingDecimal32, sign: bool, result: *mut u8) -> usize {
     // Print the exponent.
     *result.offset(index) = b'E';
     index += 1;
-    let mut exp = v.exponent + olength as i32;
+    let mut exp = v.exponent + olength as i32 - 1;
     if exp < 0 {
         *result.offset(index) = b'-';
         index += 1;
@@ -461,7 +474,7 @@ pub unsafe fn f2s_buffered_n(f: f32, result: *mut u8) -> usize {
     let bits = mem::transmute::<f32, u32>(f).to_le();
 
     // Decode bits into sign, mantissa, and exponent.
-    let sign = ((bits >> (FLOAT_MANTISSA_BITS + FLOAT_EXPONENT_BITS)) & 1) != 0;
+    let ieee_sign = ((bits >> (FLOAT_MANTISSA_BITS + FLOAT_EXPONENT_BITS)) & 1) != 0;
     let ieee_mantissa = bits & ((1u32 << FLOAT_MANTISSA_BITS) - 1);
     let ieee_exponent =
         ((bits >> FLOAT_MANTISSA_BITS) & ((1u32 << FLOAT_EXPONENT_BITS) - 1)) as u32;
@@ -470,9 +483,9 @@ pub unsafe fn f2s_buffered_n(f: f32, result: *mut u8) -> usize {
     if ieee_exponent == ((1u32 << FLOAT_EXPONENT_BITS) - 1)
         || (ieee_exponent == 0 && ieee_mantissa == 0)
     {
-        return copy_special_str(result, sign, ieee_exponent != 0, ieee_mantissa != 0);
+        return copy_special_str(result, ieee_sign, ieee_exponent != 0, ieee_mantissa != 0);
     }
 
     let v = f2d(ieee_mantissa, ieee_exponent);
-    to_chars(v, sign, result)
+    to_chars(v, ieee_sign, result)
 }

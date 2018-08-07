@@ -36,7 +36,7 @@ pub unsafe fn d2s_buffered_n(f: f64, result: *mut u8) -> usize {
     let v = d2d(ieee_mantissa, ieee_exponent);
 
     let length = d2s::decimal_length(v.mantissa) as isize;
-    let k = v.exponent as isize + 1;
+    let k = v.exponent as isize;
     let kk = length + k; // 10^(kk-1) <= v < 10^kk
     debug_assert!(k >= -324);
 
@@ -106,7 +106,7 @@ pub unsafe fn f2s_buffered_n(f: f32, result: *mut u8) -> usize {
     let v = f2d(ieee_mantissa, ieee_exponent);
 
     let length = f2s::decimal_length(v.mantissa) as isize;
-    let k = v.exponent as isize + 1;
+    let k = v.exponent as isize;
     let kk = length + k; // 10^(kk-1) <= v < 10^kk
     debug_assert!(k >= -45);
 

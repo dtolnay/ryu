@@ -113,6 +113,19 @@ fn test_regression() {
 }
 
 #[test]
+fn test_looks_like_pow5() {
+    // These numbers have a mantissa that is a multiple of the largest power of
+    // 5 that fits, and an exponent that causes the computation for q to result
+    // in 22, which is a corner case for Ryu.
+    assert_eq!(f64::from_bits(0x4830F0CF064DD592), 5.764607523034235e39);
+    check!(5.764607523034235E39, 5.764607523034235e39);
+    assert_eq!(f64::from_bits(0x4840F0CF064DD592), 1.152921504606847e40);
+    check!(1.152921504606847E40, 1.152921504606847e40);
+    assert_eq!(f64::from_bits(0x4850F0CF064DD592), 2.305843009213694e40);
+    check!(2.305843009213694E40, 2.305843009213694e40);
+}
+
+#[test]
 fn test_output_length() {
     check!(1E0, 1.0); // already tested in Basic
     check!(1.2E0, 1.2);
