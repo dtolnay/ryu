@@ -122,15 +122,16 @@ static FLOAT_POW5_SPLIT: [u64; 47] = [
 fn pow5_factor(mut value: u32) -> u32 {
     let mut count = 0u32;
     loop {
-        if value == 0 {
-            return 0;
+        debug_assert!(value != 0);
+        let q = value / 5;
+        let r = value % 5;
+        if r != 0 {
+            break;
         }
-        if value % 5 != 0 {
-            return count;
-        }
-        value /= 5;
+        value = q;
         count += 1;
     }
+    count
 }
 
 // Returns true if value is divisible by 5^p.
@@ -261,7 +262,7 @@ pub fn f2d(ieee_mantissa: u32, ieee_exponent: u32) -> FloatingDecimal32 {
                 (mul_pow5_inv_div_pow2(mv, q - 1, -e2 + q as i32 - 1 + l) % 10) as u8;
         }
         if q <= 9 {
-            // The largest power of 5 that fits in 24 bits is 5^10, but q<=9 seems to be safe as well.
+            // The largest power of 5 that fits in 24 bits is 5^10, but q <= 9 seems to be safe as well.
             // Only one of mp, mv, and mm can be a multiple of 5, if any.
             if mv % 5 == 0 {
                 vr_is_trailing_zeros = multiple_of_power_of_5(mv, q);
@@ -304,7 +305,7 @@ pub fn f2d(ieee_mantissa: u32, ieee_exponent: u32) -> FloatingDecimal32 {
     // Step 4: Find the shortest decimal representation in the interval of legal representations.
     let mut removed = 0u32;
     let output = if vm_is_trailing_zeros || vr_is_trailing_zeros {
-        // General case, which happens rarely.
+        // General case, which happens rarely (~4.0%).
         while vp / 10 > vm / 10 {
             vm_is_trailing_zeros &= vm - (vm / 10) * 10 == 0;
             vr_is_trailing_zeros &= last_removed_digit == 0;
@@ -328,11 +329,13 @@ pub fn f2d(ieee_mantissa: u32, ieee_exponent: u32) -> FloatingDecimal32 {
             // Round even if the exact number is .....50..0.
             last_removed_digit = 4;
         }
-        // We need to take vr+1 if vr is outside bounds or we need to round up.
-        vr + ((vr == vm && (!accept_bounds || !vm_is_trailing_zeros)) || (last_removed_digit >= 5))
+        // We need to take vr + 1 if vr is outside bounds or we need to round up.
+        vr + ((vr == vm && (!accept_bounds || !vm_is_trailing_zeros)) || last_removed_digit >= 5)
             as u32
     } else {
-        // Common case.
+        // Specialized for the common case (~96.0%). Percentages below are relative to this.
+        // Loop iterations below (approximately):
+        // 0: 13.6%, 1: 70.7%, 2: 14.1%, 3: 1.39%, 4: 0.14%, 5+: 0.01%
         while vp / 10 > vm / 10 {
             last_removed_digit = (vr % 10) as u8;
             vr /= 10;
@@ -340,8 +343,8 @@ pub fn f2d(ieee_mantissa: u32, ieee_exponent: u32) -> FloatingDecimal32 {
             vm /= 10;
             removed += 1;
         }
-        // We need to take vr+1 if vr is outside bounds or we need to round up.
-        vr + ((vr == vm) || (last_removed_digit >= 5)) as u32
+        // We need to take vr + 1 if vr is outside bounds or we need to round up.
+        vr + (vr == vm || last_removed_digit >= 5) as u32
     };
     let exp = e10 + removed as i32;
 

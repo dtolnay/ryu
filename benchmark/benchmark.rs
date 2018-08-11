@@ -32,6 +32,10 @@ impl MeanAndVariance {
     fn variance(&self) -> f64 {
         self.m2 / (self.n - 1) as f64
     }
+
+    fn stddev(&self) -> f64 {
+        self.variance().sqrt()
+    }
 }
 
 macro_rules! benchmark {
@@ -60,7 +64,7 @@ macro_rules! benchmark {
                 "{:12} {:8.3} {:8.3}",
                 concat!(stringify!($name), ":"),
                 mv.mean,
-                mv.variance().sqrt()
+                mv.stddev(),
             );
             throwaway
         }

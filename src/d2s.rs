@@ -42,15 +42,16 @@ const DOUBLE_POW5_BITCOUNT: i32 = 121;
 fn pow5_factor(mut value: u64) -> u32 {
     let mut count = 0u32;
     loop {
-        if value == 0 {
-            return 0;
+        debug_assert!(value != 0);
+        let q = value / 5;
+        let r = value % 5;
+        if r != 0 {
+            break;
         }
-        if value % 5 != 0 {
-            return count;
-        }
-        value /= 5;
+        value = q;
         count += 1;
     }
+    count
 }
 
 // Returns true if value is divisible by 5^p.
@@ -290,10 +291,10 @@ pub fn d2d(ieee_mantissa: u64, ieee_exponent: u32) -> FloatingDecimal64 {
             }
         } else if q < 63 {
             // TODO(ulfjack): Use a tighter bound here.
-            // We need to compute min(ntz(mv), pow5_factor(mv) - e2) >= q-1
-            // <=> ntz(mv) >= q-1  &&  pow5_factor(mv) - e2 >= q-1
-            // <=> ntz(mv) >= q-1    (e2 is negative and -e2 >= q)
-            // <=> (mv & ((1 << (q-1)) - 1)) == 0
+            // We need to compute min(ntz(mv), pow5_factor(mv) - e2) >= q - 1
+            // <=> ntz(mv) >= q - 1  &&  pow5_factor(mv) - e2 >= q - 1
+            // <=> ntz(mv) >= q - 1    (e2 is negative and -e2 >= q)
+            // <=> (mv & ((1 << (q - 1)) - 1)) == 0
             // We also need to make sure that the left shift does not overflow.
             vr_is_trailing_zeros = multiple_of_power_of_2(mv, q - 1);
         }
@@ -304,7 +305,7 @@ pub fn d2d(ieee_mantissa: u64, ieee_exponent: u32) -> FloatingDecimal64 {
     let mut last_removed_digit = 0u8;
     // On average, we remove ~2 digits.
     let output = if vm_is_trailing_zeros || vr_is_trailing_zeros {
-        // General case, which happens rarely (<1%).
+        // General case, which happens rarely (~0.7%).
         while vp / 10 > vm / 10 {
             vm_is_trailing_zeros &= vm - (vm / 10) * 10 == 0;
             vr_is_trailing_zeros &= last_removed_digit == 0;
@@ -328,20 +329,33 @@ pub fn d2d(ieee_mantissa: u64, ieee_exponent: u32) -> FloatingDecimal64 {
             // Round even if the exact number is .....50..0.
             last_removed_digit = 4;
         }
-        // We need to take vr+1 if vr is outside bounds or we need to round up.
-        vr + ((vr == vm && (!accept_bounds || !vm_is_trailing_zeros)) || (last_removed_digit >= 5))
+        // We need to take vr + 1 if vr is outside bounds or we need to round up.
+        vr + ((vr == vm && (!accept_bounds || !vm_is_trailing_zeros)) || last_removed_digit >= 5)
             as u64
     } else {
-        // Specialized for the common case (>99%).
+        // Specialized for the common case (~99.3%). Percentages below are relative to this.
+        let mut round_up = false;
+        // Optimization: remove two digits at a time (~86.2%).
+        if vp / 100 > vm / 100 {
+            round_up = vr % 100 >= 50;
+            vr /= 100;
+            vp /= 100;
+            vm /= 100;
+            removed += 2;
+        }
+        // Loop iterations below (approximately), without optimization above:
+        // 0: 0.03%, 1: 13.8%, 2: 70.6%, 3: 14.0%, 4: 1.40%, 5: 0.14%, 6+: 0.02%
+        // Loop iterations below (approximately), with optimization above:
+        // 0: 70.6%, 1: 27.8%, 2: 1.40%, 3: 0.14%, 4+: 0.02%
         while vp / 10 > vm / 10 {
-            last_removed_digit = (vr % 10) as u8;
+            round_up = vr % 10 >= 5;
             vr /= 10;
             vp /= 10;
             vm /= 10;
             removed += 1;
         }
-        // We need to take vr+1 if vr is outside bounds or we need to round up.
-        vr + ((vr == vm) || (last_removed_digit >= 5)) as u64
+        // We need to take vr + 1 if vr is outside bounds or we need to round up.
+        vr + (vr == vm || round_up) as u64
     };
     let exp = e10 + removed as i32;
 
