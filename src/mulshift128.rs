@@ -31,14 +31,21 @@ pub fn umul128(a: u64, b: u64) -> (u64, u64) {
     let b10 = a_hi as u64 * b_lo as u64;
     let b11 = a_hi as u64 * b_hi as u64;
 
-    let mid_sum = b01 + b10;
-    let mid_carry = (mid_sum < b01) as u64;
+    let b00_lo = b00 as u32;
+    let b00_hi = (b00 >> 32) as u32;
 
-    let product_lo = b00.wrapping_add(mid_sum << 32);
-    let product_lo_carry = (product_lo < b00) as u64;
+    let mid1 = b10 + b00_hi as u64;
+    let mid1_lo = mid1 as u32;
+    let mid1_hi = (mid1 >> 32) as u32;
 
-    let product_hi = b11 + (mid_sum >> 32) + (mid_carry << 32) + product_lo_carry;
-    (product_lo, product_hi)
+    let mid2 = b01 + mid1_lo as u64;
+    let mid2_lo = mid2 as u32;
+    let mid2_hi = (mid2 >> 32) as u32;
+
+    let p_hi = b11 + mid1_hi as u64 + mid2_hi as u64;
+    let p_lo = ((mid2_lo as u64) << 32) + b00_lo as u64;
+
+    (p_lo, p_hi)
 }
 
 #[cfg_attr(feature = "no-panic", inline)]
