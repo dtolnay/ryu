@@ -10,3 +10,4 @@ matrix:
     - rust: 1.15.0
       script:
         - cargo build
+        - cargo build --features small
