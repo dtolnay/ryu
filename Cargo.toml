@@ -1,6 +1,6 @@
 [package]
 name = "ryu"
-version = "0.2.2"
+version = "0.2.3"
 authors = ["David Tolnay <dtolnay@gmail.com>"]
 license = "Apache-2.0"
 description = "Fast floating point to string conversion"
