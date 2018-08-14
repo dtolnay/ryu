@@ -223,7 +223,6 @@ pub fn d2d(ieee_mantissa: u64, ieee_exponent: u32) -> FloatingDecimal64 {
         e10 = q as i32;
         let k = DOUBLE_POW5_INV_BITCOUNT + pow5bits(q as i32) as i32 - 1;
         let i = -e2 + q as i32 + k;
-        debug_assert!(q < DOUBLE_POW5_INV_SPLIT.len() as u32);
         vr = mul_shift_all(
             m2,
             #[cfg(feature = "small")]
@@ -232,6 +231,7 @@ pub fn d2d(ieee_mantissa: u64, ieee_exponent: u32) -> FloatingDecimal64 {
             },
             #[cfg(not(feature = "small"))]
             unsafe {
+                debug_assert!(q < DOUBLE_POW5_INV_SPLIT.len() as u32);
                 DOUBLE_POW5_INV_SPLIT.get_unchecked(q as usize)
             },
             i as u32,
@@ -262,7 +262,6 @@ pub fn d2d(ieee_mantissa: u64, ieee_exponent: u32) -> FloatingDecimal64 {
         let i = -e2 - q as i32;
         let k = pow5bits(i) as i32 - DOUBLE_POW5_BITCOUNT;
         let j = q as i32 - k;
-        debug_assert!(i < DOUBLE_POW5_SPLIT.len() as i32);
         vr = mul_shift_all(
             m2,
             #[cfg(feature = "small")]
@@ -271,6 +270,7 @@ pub fn d2d(ieee_mantissa: u64, ieee_exponent: u32) -> FloatingDecimal64 {
             },
             #[cfg(not(feature = "small"))]
             unsafe {
+                debug_assert!(i < DOUBLE_POW5_SPLIT.len() as i32);
                 DOUBLE_POW5_SPLIT.get_unchecked(i as usize)
             },
             j as u32,
