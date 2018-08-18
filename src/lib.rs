@@ -30,7 +30,7 @@
 //! ```
 
 #![no_std]
-#![doc(html_root_url = "https://docs.rs/ryu/0.2.3")]
+#![doc(html_root_url = "https://docs.rs/ryu/0.2.4")]
 #![cfg_attr(feature = "no-panic", feature(use_extern_macros))]
 #![cfg_attr(
     feature = "cargo-clippy",
