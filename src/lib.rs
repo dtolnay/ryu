@@ -51,12 +51,12 @@ mod common;
 mod d2s;
 #[cfg(not(feature = "small"))]
 mod d2s_full_table;
+#[cfg(not(integer128))]
+mod d2s_intrinsics;
 #[cfg(feature = "small")]
 mod d2s_small_table;
 mod digit_table;
 mod f2s;
-#[cfg(not(integer128))]
-mod mulshift128;
 mod pretty;
 
 pub use buffer::{Buffer, Float};

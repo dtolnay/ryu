@@ -27,7 +27,7 @@ use d2s_full_table::*;
 use d2s_small_table::*;
 use digit_table::*;
 #[cfg(not(integer128))]
-use mulshift128::*;
+use d2s_intrinsics::*;
 
 #[cfg(feature = "no-panic")]
 use no_panic::no_panic;

@@ -20,7 +20,7 @@
 
 use common::*;
 #[cfg(not(integer128))]
-use mulshift128::*;
+use d2s_intrinsics::*;
 
 pub static DOUBLE_POW5_TABLE: [u64; 26] = [
     1,

@@ -24,7 +24,7 @@ example `0.3` rather than `3E-1`.
 uses nothing from the Rust standard library so is usable from no_std crates.*
 
 [paper]: https://dl.acm.org/citation.cfm?id=3192369
-[upstream]: https://github.com/ulfjack/ryu/tree/4ffc2b759e4b0a431b35dbfbfd6e0e85fdd15a69
+[upstream]: https://github.com/ulfjack/ryu/tree/a7641807758cffd19d95221708bd6baf6715dcb7
 
 ```toml
 [dependencies]
