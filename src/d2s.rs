@@ -26,7 +26,6 @@ use d2s_full_table::*;
 #[cfg(feature = "small")]
 use d2s_small_table::*;
 use digit_table::*;
-#[cfg(not(integer128))]
 use d2s_intrinsics::*;
 
 #[cfg(feature = "no-panic")]
@@ -43,8 +42,8 @@ fn pow5_factor(mut value: u64) -> u32 {
     let mut count = 0u32;
     loop {
         debug_assert!(value != 0);
-        let q = value / 5;
-        let r = value % 5;
+        let q = div5(value);
+        let r = (value - 5 * q) as u32;
         if r != 0 {
             break;
         }
@@ -243,7 +242,8 @@ pub fn d2d(ieee_mantissa: u64, ieee_exponent: u32) -> FloatingDecimal64 {
             // This should use q <= 22, but I think 21 is also safe. Smaller values
             // may still be safe, but it's more difficult to reason about them.
             // Only one of mp, mv, and mm can be a multiple of 5, if any.
-            if mv % 5 == 0 {
+            let mv_mod5 = (mv - 5 * div5(mv)) as u32;
+            if mv_mod5 == 0 {
                 vr_is_trailing_zeros = multiple_of_power_of_5(mv, q);
             } else if accept_bounds {
                 // Same as min(e2 + (~mm & 1), pow5_factor(mm)) >= q
@@ -306,22 +306,38 @@ pub fn d2d(ieee_mantissa: u64, ieee_exponent: u32) -> FloatingDecimal64 {
     // On average, we remove ~2 digits.
     let output = if vm_is_trailing_zeros || vr_is_trailing_zeros {
         // General case, which happens rarely (~0.7%).
-        while vp / 10 > vm / 10 {
-            vm_is_trailing_zeros &= vm - (vm / 10) * 10 == 0;
+        loop {
+            let vp_div10 = div10(vp);
+            let vm_div10 = div10(vm);
+            if vp_div10 <= vm_div10 {
+                break;
+            }
+            let vm_mod10 = (vm - 10 * vm_div10) as u32;
+            let vr_div10 = div10(vr);
+            let vr_mod10 = (vr - 10 * vr_div10) as u32;
+            vm_is_trailing_zeros &= vm_mod10 == 0;
             vr_is_trailing_zeros &= last_removed_digit == 0;
-            last_removed_digit = (vr % 10) as u8;
-            vr /= 10;
-            vp /= 10;
-            vm /= 10;
+            last_removed_digit = vr_mod10 as u8;
+            vr = vr_div10;
+            vp = vp_div10;
+            vm = vm_div10;
             removed += 1;
         }
         if vm_is_trailing_zeros {
-            while vm % 10 == 0 {
+            loop {
+                let vm_div10 = div10(vm);
+                let vm_mod10 = (vm - 10 * vm_div10) as u32;
+                if vm_mod10 != 0 {
+                    break;
+                }
+                let vp_div10 = div10(vp);
+                let vr_div10 = div10(vr);
+                let vr_mod10 = (vr - 10 * vr_div10) as u32;
                 vr_is_trailing_zeros &= last_removed_digit == 0;
-                last_removed_digit = (vr % 10) as u8;
-                vr /= 10;
-                vp /= 10;
-                vm /= 10;
+                last_removed_digit = vr_mod10 as u8;
+                vr = vr_div10;
+                vp = vp_div10;
+                vm = vm_div10;
                 removed += 1;
             }
         }
@@ -335,23 +351,34 @@ pub fn d2d(ieee_mantissa: u64, ieee_exponent: u32) -> FloatingDecimal64 {
     } else {
         // Specialized for the common case (~99.3%). Percentages below are relative to this.
         let mut round_up = false;
+        let vp_div100 = div100(vp);
+        let vm_div100 = div100(vm);
         // Optimization: remove two digits at a time (~86.2%).
-        if vp / 100 > vm / 100 {
-            round_up = vr % 100 >= 50;
-            vr /= 100;
-            vp /= 100;
-            vm /= 100;
+        if vp_div100 > vm_div100 {
+            let vr_div100 = div100(vr);
+            let vr_mod100 = (vr - 100 * vr_div100) as u32;
+            round_up = vr_mod100 >= 50;
+            vr = vr_div100;
+            vp = vp_div100;
+            vm = vm_div100;
             removed += 2;
         }
         // Loop iterations below (approximately), without optimization above:
         // 0: 0.03%, 1: 13.8%, 2: 70.6%, 3: 14.0%, 4: 1.40%, 5: 0.14%, 6+: 0.02%
         // Loop iterations below (approximately), with optimization above:
         // 0: 70.6%, 1: 27.8%, 2: 1.40%, 3: 0.14%, 4+: 0.02%
-        while vp / 10 > vm / 10 {
-            round_up = vr % 10 >= 5;
-            vr /= 10;
-            vp /= 10;
-            vm /= 10;
+        loop {
+            let vp_div10 = div10(vp);
+            let vm_div10 = div10(vm);
+            if vp_div10 <= vm_div10 {
+                break;
+            }
+            let vr_div10 = div10(vr);
+            let vr_mod10 = (vr - 10 * vr_div10) as u32;
+            round_up = vr_mod10 >= 5;
+            vr = vr_div10;
+            vp = vp_div10;
+            vm = vm_div10;
             removed += 1;
         }
         // We need to take vr + 1 if vr is outside bounds or we need to round up.
@@ -392,8 +419,9 @@ unsafe fn to_chars(v: FloatingDecimal64, sign: bool, result: *mut u8) -> usize {
     // so the rest will fit into uint32_t.
     if (output >> 32) != 0 {
         // Expensive 64-bit division.
-        let mut output2 = (output - 100000000 * (output / 100000000)) as u32;
-        output /= 100000000;
+        let q = div100_000_000(output);
+        let mut output2 = (output - 100_000_000 * q) as u32;
+        output = q;
 
         let c = output2 % 10000;
         output2 /= 10000;

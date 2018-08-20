@@ -19,6 +19,7 @@
 // KIND, either express or implied.
 
 // Returns (lo, hi).
+#[cfg(not(integer128))]
 #[cfg_attr(feature = "no-panic", inline)]
 pub fn umul128(a: u64, b: u64) -> (u64, u64) {
     let a_lo = a as u32;
@@ -48,10 +49,31 @@ pub fn umul128(a: u64, b: u64) -> (u64, u64) {
     (p_lo, p_hi)
 }
 
+#[cfg(not(integer128))]
 #[cfg_attr(feature = "no-panic", inline)]
 pub fn shiftright128(lo: u64, hi: u64, dist: u32) -> u64 {
     // We don't need to handle the case dist >= 64 here (see above).
     debug_assert!(dist > 0);
     debug_assert!(dist < 64);
     (hi << (64 - dist)) | (lo >> dist)
+}
+
+#[cfg_attr(feature = "no-panic", inline)]
+pub fn div5(x: u64) -> u64 {
+    x / 5
+}
+
+#[cfg_attr(feature = "no-panic", inline)]
+pub fn div10(x: u64) -> u64 {
+    x / 10
+}
+
+#[cfg_attr(feature = "no-panic", inline)]
+pub fn div100(x: u64) -> u64 {
+    x / 100
+}
+
+#[cfg_attr(feature = "no-panic", inline)]
+pub fn div100_000_000(x: u64) -> u64 {
+    x / 100_000_000
 }
