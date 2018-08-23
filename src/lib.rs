@@ -30,7 +30,7 @@
 //! ```
 
 #![no_std]
-#![doc(html_root_url = "https://docs.rs/ryu/0.2.4")]
+#![doc(html_root_url = "https://docs.rs/ryu/0.2.5")]
 #![cfg_attr(
     feature = "cargo-clippy",
     allow(
