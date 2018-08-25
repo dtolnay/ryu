@@ -2,7 +2,7 @@
 name = "ryu"
 version = "0.2.5"
 authors = ["David Tolnay <dtolnay@gmail.com>"]
-license = "Apache-2.0"
+license = "Apache-2.0 OR BSL-1.0"
 description = "Fast floating point to string conversion"
 repository = "https://github.com/dtolnay/ryu"
 documentation = "https://docs.rs/ryu"

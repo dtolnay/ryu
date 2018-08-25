@@ -71,4 +71,7 @@ all perform the same, taking around 21 nanoseconds to format a 32-bit float and
 
 ## License
 
-Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE) or http://www.apache.org/licenses/LICENSE-2.0)
+Licensed under either of the following at your option.
+
+- Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE) or http://www.apache.org/licenses/LICENSE-2.0)
+- Boost Software License 1.0 ([LICENSE-BOOST](LICENSE-BOOST) or https://www.boost.org/LICENSE_1_0.txt)
