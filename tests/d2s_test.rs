@@ -37,6 +37,12 @@ fn pretty(f: f64) -> String {
     ryu::Buffer::new().format(f).to_owned()
 }
 
+fn ieee_parts_to_double(sign: bool, ieee_exponent: u32, ieee_mantissa: u64) -> f64 {
+    assert!(ieee_exponent <= 2047);
+    assert!(ieee_mantissa <= (1u64 << 53) - 1);
+    f64::from_bits(((sign as u64) << 63) | ((ieee_exponent as u64) << 52) | ieee_mantissa)
+}
+
 #[test]
 fn test_ryu() {
     check!(3E-1, 0.3);
@@ -151,4 +157,68 @@ fn test_output_length() {
     check!(4.294967296E0, 4.294967296); // 2^32
     check!(4.294967297E0, 4.294967297); // 2^32 + 1
     check!(4.294967298E0, 4.294967298); // 2^32 + 2
+}
+
+// Test min, max shift values in shiftright128
+#[test]
+fn test_min_max_shift() {
+    let max_mantissa = (1u64 << 53) - 1;
+
+    // 32-bit opt-size=0:  49 <= dist <= 50
+    // 32-bit opt-size=1:  30 <= dist <= 50
+    // 64-bit opt-size=0:  50 <= dist <= 50
+    // 64-bit opt-size=1:  30 <= dist <= 50
+    assert_eq!(1.7800590868057611E-307, ieee_parts_to_double(false, 4, 0));
+    check!(1.7800590868057611E-307, 1.7800590868057611e-307);
+    // 32-bit opt-size=0:  49 <= dist <= 49
+    // 32-bit opt-size=1:  28 <= dist <= 49
+    // 64-bit opt-size=0:  50 <= dist <= 50
+    // 64-bit opt-size=1:  28 <= dist <= 50
+    assert_eq!(2.8480945388892175E-306, ieee_parts_to_double(false, 6, max_mantissa));
+    check!(2.8480945388892175E-306, 2.8480945388892175e-306);
+    // 32-bit opt-size=0:  52 <= dist <= 53
+    // 32-bit opt-size=1:   2 <= dist <= 53
+    // 64-bit opt-size=0:  53 <= dist <= 53
+    // 64-bit opt-size=1:   2 <= dist <= 53
+    assert_eq!(2.446494580089078E-296, ieee_parts_to_double(false, 41, 0));
+    check!(2.446494580089078E-296, 2.446494580089078e-296);
+    // 32-bit opt-size=0:  52 <= dist <= 52
+    // 32-bit opt-size=1:   2 <= dist <= 52
+    // 64-bit opt-size=0:  53 <= dist <= 53
+    // 64-bit opt-size=1:   2 <= dist <= 53
+    assert_eq!(4.8929891601781557E-296, ieee_parts_to_double(false, 40, max_mantissa));
+    check!(4.8929891601781557E-296, 4.8929891601781557e-296);
+
+    // 32-bit opt-size=0:  57 <= dist <= 58
+    // 32-bit opt-size=1:  57 <= dist <= 58
+    // 64-bit opt-size=0:  58 <= dist <= 58
+    // 64-bit opt-size=1:  58 <= dist <= 58
+    assert_eq!(1.8014398509481984E16, ieee_parts_to_double(false, 1077, 0));
+    check!(1.8014398509481984E16, 1.8014398509481984e16);
+    // 32-bit opt-size=0:  57 <= dist <= 57
+    // 32-bit opt-size=1:  57 <= dist <= 57
+    // 64-bit opt-size=0:  58 <= dist <= 58
+    // 64-bit opt-size=1:  58 <= dist <= 58
+    assert_eq!(3.6028797018963964E16, ieee_parts_to_double(false, 1076, max_mantissa));
+    check!(3.6028797018963964E16, 3.6028797018963964e16);
+    // 32-bit opt-size=0:  51 <= dist <= 52
+    // 32-bit opt-size=1:  51 <= dist <= 59
+    // 64-bit opt-size=0:  52 <= dist <= 52
+    // 64-bit opt-size=1:  52 <= dist <= 59
+    assert_eq!(2.900835519859558E-216, ieee_parts_to_double(false, 307, 0));
+    check!(2.900835519859558E-216, 2.900835519859558e-216);
+    // 32-bit opt-size=0:  51 <= dist <= 51
+    // 32-bit opt-size=1:  51 <= dist <= 59
+    // 64-bit opt-size=0:  52 <= dist <= 52
+    // 64-bit opt-size=1:  52 <= dist <= 59
+    assert_eq!(5.801671039719115E-216, ieee_parts_to_double(false, 306, max_mantissa));
+    check!(5.801671039719115E-216, 5.801671039719115e-216);
+
+    // https://github.com/ulfjack/ryu/commit/19e44d16d80236f5de25800f56d82606d1be00b9#commitcomment-30146483
+    // 32-bit opt-size=0:  49 <= dist <= 49
+    // 32-bit opt-size=1:  44 <= dist <= 49
+    // 64-bit opt-size=0:  50 <= dist <= 50
+    // 64-bit opt-size=1:  44 <= dist <= 50
+    assert_eq!(3.196104012172126E-27, ieee_parts_to_double(false, 934, 0x000FA7161A4D6E0C));
+    check!(3.196104012172126E-27, 3.196104012172126e-27);
 }
