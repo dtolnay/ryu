@@ -532,7 +532,8 @@ unsafe fn to_chars(v: FloatingDecimal64, sign: bool, result: *mut u8) -> usize {
     index as usize
 }
 
-/// Print f64 to the given buffer and return number of bytes written.
+/// Print f64 to the given buffer and return number of bytes written. Ryū's
+/// original formatting.
 ///
 /// At most 24 bytes will be written.
 ///
