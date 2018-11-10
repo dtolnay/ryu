@@ -13,6 +13,41 @@ use f2s::*;
 #[cfg(feature = "no-panic")]
 use no_panic::no_panic;
 
+/// Print f64 to the given buffer and return number of bytes written. Human
+/// readable formatting.
+///
+/// At most 24 bytes will be written.
+///
+/// ## Special cases
+///
+/// This function **does not** check for NaN or infinity. If the input
+/// number is not a finite float, the printed representation will be some
+/// correctly formatted but unspecified numerical value.
+///
+/// Please check [`is_finite`] yourself before calling this function, or
+/// check [`is_nan`] and [`is_infinite`] and handle those cases yourself.
+///
+/// [`is_finite`]: https://doc.rust-lang.org/std/primitive.f64.html#method.is_finite
+/// [`is_nan`]: https://doc.rust-lang.org/std/primitive.f64.html#method.is_nan
+/// [`is_infinite`]: https://doc.rust-lang.org/std/primitive.f64.html#method.is_infinite
+///
+/// ## Safety
+///
+/// The `result` pointer argument must point to sufficiently many writable bytes
+/// to hold Ryū's representation of `f`.
+///
+/// ## Example
+///
+/// ```rust
+/// let f = 1.234f64;
+///
+/// unsafe {
+///     let mut buffer: [u8; 24] = std::mem::uninitialized();
+///     let n = ryu::raw::pretty_d2s_buffered_n(f, &mut buffer[0]);
+///     let s = std::str::from_utf8_unchecked(&buffer[..n]);
+///     assert_eq!(s, "1.234");
+/// }
+/// ```
 #[cfg_attr(must_use_return, must_use)]
 #[cfg_attr(feature = "no-panic", no_panic)]
 pub unsafe fn d2s_buffered_n(f: f64, result: *mut u8) -> usize {
@@ -83,6 +118,41 @@ pub unsafe fn d2s_buffered_n(f: f64, result: *mut u8) -> usize {
     }
 }
 
+/// Print f32 to the given buffer and return number of bytes written. Human
+/// readable formatting.
+///
+/// At most 16 bytes will be written.
+///
+/// ## Special cases
+///
+/// This function **does not** check for NaN or infinity. If the input
+/// number is not a finite float, the printed representation will be some
+/// correctly formatted but unspecified numerical value.
+///
+/// Please check [`is_finite`] yourself before calling this function, or
+/// check [`is_nan`] and [`is_infinite`] and handle those cases yourself.
+///
+/// [`is_finite`]: https://doc.rust-lang.org/std/primitive.f32.html#method.is_finite
+/// [`is_nan`]: https://doc.rust-lang.org/std/primitive.f32.html#method.is_nan
+/// [`is_infinite`]: https://doc.rust-lang.org/std/primitive.f32.html#method.is_infinite
+///
+/// ## Safety
+///
+/// The `result` pointer argument must point to sufficiently many writable bytes
+/// to hold Ryū's representation of `f`.
+///
+/// ## Example
+///
+/// ```rust
+/// let f = 1.234f32;
+///
+/// unsafe {
+///     let mut buffer: [u8; 16] = std::mem::uninitialized();
+///     let n = ryu::raw::pretty_f2s_buffered_n(f, &mut buffer[0]);
+///     let s = std::str::from_utf8_unchecked(&buffer[..n]);
+///     assert_eq!(s, "1.234");
+/// }
+/// ```
 #[cfg_attr(must_use_return, must_use)]
 #[cfg_attr(feature = "no-panic", no_panic)]
 pub unsafe fn f2s_buffered_n(f: f32, result: *mut u8) -> usize {
