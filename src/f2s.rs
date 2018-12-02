@@ -29,6 +29,7 @@ use no_panic::no_panic;
 pub const FLOAT_MANTISSA_BITS: u32 = 23;
 pub const FLOAT_EXPONENT_BITS: u32 = 8;
 
+const FLOAT_BIAS: i32 = 127;
 const FLOAT_POW5_INV_BITCOUNT: i32 = 59;
 const FLOAT_POW5_BITCOUNT: i32 = 61;
 
@@ -213,24 +214,22 @@ pub struct FloatingDecimal32 {
 
 #[cfg_attr(feature = "no-panic", inline)]
 pub fn f2d(ieee_mantissa: u32, ieee_exponent: u32) -> FloatingDecimal32 {
-    let bias = (1u32 << (FLOAT_EXPONENT_BITS - 1)) - 1;
-
     let (e2, m2) = if ieee_exponent == 0 {
         (
             // We subtract 2 so that the bounds computation has 2 additional bits.
-            1 - bias as i32 - FLOAT_MANTISSA_BITS as i32 - 2,
+            1 - FLOAT_BIAS - FLOAT_MANTISSA_BITS as i32 - 2,
             ieee_mantissa,
         )
     } else {
         (
-            ieee_exponent as i32 - bias as i32 - FLOAT_MANTISSA_BITS as i32 - 2,
+            ieee_exponent as i32 - FLOAT_BIAS - FLOAT_MANTISSA_BITS as i32 - 2,
             (1u32 << FLOAT_MANTISSA_BITS) | ieee_mantissa,
         )
     };
     let even = (m2 & 1) == 0;
     let accept_bounds = even;
 
-    // Step 2: Determine the interval of legal decimal representations.
+    // Step 2: Determine the interval of valid decimal representations.
     let mv = 4 * m2;
     let mp = 4 * m2 + 2;
     // Implicit bool -> int conversion. True is 1, false is 0.
@@ -246,9 +245,9 @@ pub fn f2d(ieee_mantissa: u32, ieee_exponent: u32) -> FloatingDecimal32 {
     let mut vr_is_trailing_zeros = false;
     let mut last_removed_digit = 0u8;
     if e2 >= 0 {
-        let q = log10_pow2(e2) as u32;
+        let q = log10_pow2(e2);
         e10 = q as i32;
-        let k = FLOAT_POW5_INV_BITCOUNT + pow5bits(q as i32) as i32 - 1;
+        let k = FLOAT_POW5_INV_BITCOUNT + pow5bits(q as i32) - 1;
         let i = -e2 + q as i32 + k;
         vr = mul_pow5_inv_div_pow2(mv, q, i);
         vp = mul_pow5_inv_div_pow2(mp, q, i);
@@ -257,7 +256,7 @@ pub fn f2d(ieee_mantissa: u32, ieee_exponent: u32) -> FloatingDecimal32 {
             // We need to know one removed digit even if we are not going to loop below. We could use
             // q = X - 1 above, except that would require 33 bits for the result, and we've found that
             // 32-bit arithmetic is faster even on 64-bit machines.
-            let l = FLOAT_POW5_INV_BITCOUNT + pow5bits(q as i32 - 1) as i32 - 1;
+            let l = FLOAT_POW5_INV_BITCOUNT + pow5bits(q as i32 - 1) - 1;
             last_removed_digit =
                 (mul_pow5_inv_div_pow2(mv, q - 1, -e2 + q as i32 - 1 + l) % 10) as u8;
         }
@@ -273,16 +272,16 @@ pub fn f2d(ieee_mantissa: u32, ieee_exponent: u32) -> FloatingDecimal32 {
             }
         }
     } else {
-        let q = log10_pow5(-e2) as u32;
+        let q = log10_pow5(-e2);
         e10 = q as i32 + e2;
         let i = -e2 - q as i32;
-        let k = pow5bits(i) as i32 - FLOAT_POW5_BITCOUNT;
+        let k = pow5bits(i) - FLOAT_POW5_BITCOUNT;
         let mut j = q as i32 - k;
         vr = mul_pow5_div_pow2(mv, i as u32, j);
         vp = mul_pow5_div_pow2(mp, i as u32, j);
         vm = mul_pow5_div_pow2(mm, i as u32, j);
         if q != 0 && (vp - 1) / 10 <= vm / 10 {
-            j = q as i32 - 1 - (pow5bits(i + 1) as i32 - FLOAT_POW5_BITCOUNT);
+            j = q as i32 - 1 - (pow5bits(i + 1) - FLOAT_POW5_BITCOUNT);
             last_removed_digit = (mul_pow5_div_pow2(mv, (i + 1) as u32, j) % 10) as u8;
         }
         if q <= 1 {
@@ -302,8 +301,8 @@ pub fn f2d(ieee_mantissa: u32, ieee_exponent: u32) -> FloatingDecimal32 {
         }
     }
 
-    // Step 4: Find the shortest decimal representation in the interval of legal representations.
-    let mut removed = 0u32;
+    // Step 4: Find the shortest decimal representation in the interval of valid representations.
+    let mut removed = 0i32;
     let output = if vm_is_trailing_zeros || vr_is_trailing_zeros {
         // General case, which happens rarely (~4.0%).
         while vp / 10 > vm / 10 {
@@ -346,7 +345,7 @@ pub fn f2d(ieee_mantissa: u32, ieee_exponent: u32) -> FloatingDecimal32 {
         // We need to take vr + 1 if vr is outside bounds or we need to round up.
         vr + (vr == vm || last_removed_digit >= 5) as u32
     };
-    let exp = e10 + removed as i32;
+    let exp = e10 + removed;
 
     FloatingDecimal32 {
         exponent: exp,

@@ -34,6 +34,7 @@ use no_panic::no_panic;
 pub const DOUBLE_MANTISSA_BITS: u32 = 52;
 pub const DOUBLE_EXPONENT_BITS: u32 = 11;
 
+const DOUBLE_BIAS: i32 = 1023;
 const DOUBLE_POW5_INV_BITCOUNT: i32 = 122;
 const DOUBLE_POW5_BITCOUNT: i32 = 121;
 
@@ -183,24 +184,22 @@ pub struct FloatingDecimal64 {
 
 #[cfg_attr(feature = "no-panic", inline)]
 pub fn d2d(ieee_mantissa: u64, ieee_exponent: u32) -> FloatingDecimal64 {
-    let bias = (1u32 << (DOUBLE_EXPONENT_BITS - 1)) - 1;
-
     let (e2, m2) = if ieee_exponent == 0 {
         (
             // We subtract 2 so that the bounds computation has 2 additional bits.
-            1 - bias as i32 - DOUBLE_MANTISSA_BITS as i32 - 2,
+            1 - DOUBLE_BIAS - DOUBLE_MANTISSA_BITS as i32 - 2,
             ieee_mantissa,
         )
     } else {
         (
-            ieee_exponent as i32 - bias as i32 - DOUBLE_MANTISSA_BITS as i32 - 2,
+            ieee_exponent as i32 - DOUBLE_BIAS - DOUBLE_MANTISSA_BITS as i32 - 2,
             (1u64 << DOUBLE_MANTISSA_BITS) | ieee_mantissa,
         )
     };
     let even = (m2 & 1) == 0;
     let accept_bounds = even;
 
-    // Step 2: Determine the interval of legal decimal representations.
+    // Step 2: Determine the interval of valid decimal representations.
     let mv = 4 * m2;
     // Implicit bool -> int conversion. True is 1, false is 0.
     let mm_shift = (ieee_mantissa != 0 || ieee_exponent <= 1) as u32;
@@ -218,9 +217,9 @@ pub fn d2d(ieee_mantissa: u64, ieee_exponent: u32) -> FloatingDecimal64 {
     if e2 >= 0 {
         // I tried special-casing q == 0, but there was no effect on performance.
         // This expression is slightly faster than max(0, log10_pow2(e2) - 1).
-        let q = (log10_pow2(e2) - (e2 > 3) as i32) as u32;
+        let q = log10_pow2(e2) - (e2 > 3) as u32;
         e10 = q as i32;
-        let k = DOUBLE_POW5_INV_BITCOUNT + pow5bits(q as i32) as i32 - 1;
+        let k = DOUBLE_POW5_INV_BITCOUNT + pow5bits(q as i32) - 1;
         let i = -e2 + q as i32 + k;
         vr = mul_shift_all(
             m2,
@@ -257,10 +256,10 @@ pub fn d2d(ieee_mantissa: u64, ieee_exponent: u32) -> FloatingDecimal64 {
         }
     } else {
         // This expression is slightly faster than max(0, log10_pow5(-e2) - 1).
-        let q = (log10_pow5(-e2) - (-e2 > 1) as i32) as u32;
+        let q = log10_pow5(-e2) - (-e2 > 1) as u32;
         e10 = q as i32 + e2;
         let i = -e2 - q as i32;
-        let k = pow5bits(i) as i32 - DOUBLE_POW5_BITCOUNT;
+        let k = pow5bits(i) - DOUBLE_POW5_BITCOUNT;
         let j = q as i32 - k;
         vr = mul_shift_all(
             m2,
@@ -300,8 +299,8 @@ pub fn d2d(ieee_mantissa: u64, ieee_exponent: u32) -> FloatingDecimal64 {
         }
     }
 
-    // Step 4: Find the shortest decimal representation in the interval of legal representations.
-    let mut removed = 0u32;
+    // Step 4: Find the shortest decimal representation in the interval of valid representations.
+    let mut removed = 0i32;
     let mut last_removed_digit = 0u8;
     // On average, we remove ~2 digits.
     let output = if vm_is_trailing_zeros || vr_is_trailing_zeros {
@@ -384,7 +383,7 @@ pub fn d2d(ieee_mantissa: u64, ieee_exponent: u32) -> FloatingDecimal64 {
         // We need to take vr + 1 if vr is outside bounds or we need to round up.
         vr + (vr == vm || round_up) as u64
     };
-    let exp = e10 + removed as i32;
+    let exp = e10 + removed;
 
     FloatingDecimal64 {
         exponent: exp,
