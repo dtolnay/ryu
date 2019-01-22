@@ -53,12 +53,12 @@ $ cd c-ryu
 $ bazel run -c opt //ryu/benchmark
 ```
 
-And our benchmarks with:
+And the same benchmark against our implementation with:
 
 ```console
 $ git clone https://github.com/ulfjack/ryu rust-ryu
 $ cd rust-ryu
-$ cargo run --example benchmark --release
+$ cargo run --example upstream_benchmark --release
 ```
 
 These benchmarks measure the average time to print a 32-bit float and average
