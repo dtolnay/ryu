@@ -56,7 +56,7 @@ $ bazel run -c opt //ryu/benchmark
 And the same benchmark against our implementation with:
 
 ```console
-$ git clone https://github.com/ulfjack/ryu rust-ryu
+$ git clone https://github.com/dtolnay/ryu rust-ryu
 $ cd rust-ryu
 $ cargo run --example upstream_benchmark --release
 ```
