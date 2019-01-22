@@ -90,6 +90,18 @@ iteration; smaller is better.
 | RYU      | 3ns  | 50ns   | 35ns              | 32ns     |
 | STD      | 39ns | 105ns  | 128ns             | 202ns    |
 
+## Formatting
+
+This library tends to produce more human-readable output than the standard
+library's to\_string, which never uses scientific notation. Here are two
+examples:
+
+- *ryu:* 1.23e40, *std:* 12300000000000000000000000000000000000000
+- *ryu:* 1.23e-40, *std:* 0.000000000000000000000000000000000000000123
+
+Both libraries print short decimals such as 0.0000123 without scientific
+notation.
+
 ## License
 
 Licensed under either of the following at your option.
