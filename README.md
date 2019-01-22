@@ -69,6 +69,27 @@ The upstream C code, the unsafe direct Rust port, and the safe pretty Rust API
 all perform the same, taking around 21 nanoseconds to format a 32-bit float and
 31 nanoseconds to format a 64-bit float.
 
+There is also a Rust-specific benchmark comparing this implementation to the
+standard library which you can run with:
+
+```console
+$ cargo bench
+```
+
+The benchmark shows Ryu approximately 4-10x faster than the standard library
+across a range of f32 and f64 inputs. Measurements are in nanoseconds per
+iteration; smaller is better.
+
+| type=f32 | 0.0  | 0.1234 | 2.718281828459045 | f32::MAX |
+|:--------:|:----:|:------:|:-----------------:|:--------:|
+| RYU      | 3ns  | 28ns   | 23ns              | 22ns     |
+| STD      | 40ns | 106ns  | 128ns             | 110ns    |
+
+| type=f64 | 0.0  | 0.1234 | 2.718281828459045 | f64::MAX |
+|:--------:|:----:|:------:|:-----------------:|:--------:|
+| RYU      | 3ns  | 50ns   | 35ns              | 32ns     |
+| STD      | 39ns | 105ns  | 128ns             | 202ns    |
+
 ## License
 
 Licensed under either of the following at your option.
