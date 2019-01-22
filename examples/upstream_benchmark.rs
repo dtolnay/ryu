@@ -1,3 +1,5 @@
+// cargo run --release --example upstream_benchmark
+
 extern crate rand;
 extern crate ryu;
 

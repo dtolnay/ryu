@@ -16,10 +16,6 @@ build = "build.rs"
 # one case, and only f64) at the cost of some performance.
 small = []
 
-[[example]]
-name = "benchmark"
-path = "benchmark/benchmark.rs"
-
 [dependencies]
 no-panic = { version = "0.1", optional = true }
 
