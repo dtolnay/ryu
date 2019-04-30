@@ -19,7 +19,7 @@
 //!
 //! # Examples
 //!
-//! ```rust
+//! ```
 //! extern crate ryu;
 //!
 //! fn main() {
