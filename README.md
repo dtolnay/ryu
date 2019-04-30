@@ -34,8 +34,6 @@ ryu = "0.2"
 ## Examples
 
 ```rust
-extern crate ryu;
-
 fn main() {
     let mut buffer = ryu::Buffer::new();
     let printed = buffer.format(1.234);

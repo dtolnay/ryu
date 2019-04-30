@@ -460,7 +460,7 @@ unsafe fn to_chars(v: FloatingDecimal32, sign: bool, result: *mut u8) -> usize {
 ///
 /// ## Example
 ///
-/// ```
+/// ```edition2018
 /// let f = 1.234f32;
 ///
 /// unsafe {

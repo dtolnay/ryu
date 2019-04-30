@@ -548,7 +548,7 @@ unsafe fn to_chars(v: FloatingDecimal64, sign: bool, result: *mut u8) -> usize {
 ///
 /// ## Example
 ///
-/// ```
+/// ```edition2018
 /// let f = 1.234f64;
 ///
 /// unsafe {

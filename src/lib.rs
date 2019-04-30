@@ -19,9 +19,7 @@
 //!
 //! # Examples
 //!
-//! ```
-//! extern crate ryu;
-//!
+//! ```edition2018
 //! fn main() {
 //!     let mut buffer = ryu::Buffer::new();
 //!     let printed = buffer.format(1.234);

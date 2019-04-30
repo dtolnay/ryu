@@ -38,7 +38,7 @@ use no_panic::no_panic;
 ///
 /// ## Example
 ///
-/// ```
+/// ```edition2018
 /// let f = 1.234f64;
 ///
 /// unsafe {
@@ -143,7 +143,7 @@ pub unsafe fn d2s_buffered_n(f: f64, result: *mut u8) -> usize {
 ///
 /// ## Example
 ///
-/// ```
+/// ```edition2018
 /// let f = 1.234f32;
 ///
 /// unsafe {
