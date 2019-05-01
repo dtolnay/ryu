@@ -43,6 +43,12 @@
 
 #[cfg(feature = "no-panic")]
 extern crate no_panic;
+#[cfg(test)]
+#[macro_use]
+extern crate doc_comment;
+
+#[cfg(test)]
+doctest!("../README.md");
 
 mod buffer;
 mod common;

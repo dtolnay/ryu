@@ -22,6 +22,7 @@ no-panic = { version = "0.1", optional = true }
 [dev-dependencies]
 num_cpus = "1.8"
 rand = "0.5"
+doc-comment = "0.3"
 
 [badges]
 travis-ci = { repository = "dtolnay/ryu" }
