@@ -91,11 +91,7 @@
 #![cfg_attr(feature = "cargo-clippy", allow(renamed_and_removed_lints))]
 #![cfg_attr(
     feature = "cargo-clippy",
-    allow(
-        cast_lossless,
-        many_single_char_names,
-        unreadable_literal,
-    )
+    allow(cast_lossless, many_single_char_names, unreadable_literal,)
 )]
 
 #[cfg(feature = "no-panic")]

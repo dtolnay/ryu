@@ -23,10 +23,10 @@ use core::{mem, ptr};
 use common::*;
 #[cfg(not(feature = "small"))]
 use d2s_full_table::*;
+use d2s_intrinsics::*;
 #[cfg(feature = "small")]
 use d2s_small_table::*;
 use digit_table::*;
-use d2s_intrinsics::*;
 
 #[cfg(feature = "no-panic")]
 use no_panic::no_panic;
