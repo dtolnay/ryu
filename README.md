@@ -31,7 +31,7 @@ uses nothing from the Rust standard library so is usable from no_std crates.*
 ryu = "0.2"
 ```
 
-## Examples
+## Example
 
 ```rust
 fn main() {
