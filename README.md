@@ -100,9 +100,20 @@ examples:
 Both libraries print short decimals such as 0.0000123 without scientific
 notation.
 
-## License
+<br>
 
-Licensed under either of the following at your option.
+#### License
 
-- Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE) or http://www.apache.org/licenses/LICENSE-2.0)
-- Boost Software License 1.0 ([LICENSE-BOOST](LICENSE-BOOST) or https://www.boost.org/LICENSE_1_0.txt)
+<sup>
+Licensed under either of <a href="LICENSE-APACHE">Apache License, Version
+2.0</a> or <a href="LICENSE-BOOST">Boost Software License 1.0</a> at your
+option.
+</sup>
+
+<br>
+
+<sub>
+Unless you explicitly state otherwise, any contribution intentionally submitted
+for inclusion in this crate by you, as defined in the Apache-2.0 license, shall
+be dual licensed as above, without any additional terms or conditions.
+</sub>
