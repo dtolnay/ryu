@@ -211,7 +211,7 @@ pub fn d2d(ieee_mantissa: u64, ieee_exponent: u32) -> FloatingDecimal64 {
     let mut vr: u64;
     let mut vp: u64 = unsafe { mem::uninitialized() };
     let mut vm: u64 = unsafe { mem::uninitialized() };
-    let e10: i32;
+    let mut e10: i32;
     let mut vm_is_trailing_zeros = false;
     let mut vr_is_trailing_zeros = false;
     if e2 >= 0 {
@@ -300,10 +300,9 @@ pub fn d2d(ieee_mantissa: u64, ieee_exponent: u32) -> FloatingDecimal64 {
     }
 
     // Step 4: Find the shortest decimal representation in the interval of valid representations.
-    let mut removed = 0i32;
-    let mut last_removed_digit = 0u8;
     // On average, we remove ~2 digits.
-    let output = if vm_is_trailing_zeros || vr_is_trailing_zeros {
+    if vm_is_trailing_zeros || vr_is_trailing_zeros {
+    let mut last_removed_digit = 0u8;
         // General case, which happens rarely (~0.7%).
         loop {
             let vp_div10 = div10(vp);
@@ -320,7 +319,7 @@ pub fn d2d(ieee_mantissa: u64, ieee_exponent: u32) -> FloatingDecimal64 {
             vr = vr_div10;
             vp = vp_div10;
             vm = vm_div10;
-            removed += 1;
+            e10 += 1;
         }
         if vm_is_trailing_zeros {
             loop {
@@ -337,7 +336,7 @@ pub fn d2d(ieee_mantissa: u64, ieee_exponent: u32) -> FloatingDecimal64 {
                 vr = vr_div10;
                 vp = vp_div10;
                 vm = vm_div10;
-                removed += 1;
+                e10 += 1;
             }
         }
         if vr_is_trailing_zeros && last_removed_digit == 5 && vr % 2 == 0 {
@@ -345,49 +344,39 @@ pub fn d2d(ieee_mantissa: u64, ieee_exponent: u32) -> FloatingDecimal64 {
             last_removed_digit = 4;
         }
         // We need to take vr + 1 if vr is outside bounds or we need to round up.
-        vr + ((vr == vm && (!accept_bounds || !vm_is_trailing_zeros)) || last_removed_digit >= 5)
-            as u64
+        vr += ((vr == vm && (!accept_bounds || !vm_is_trailing_zeros)) || last_removed_digit >= 5) as u64
     } else {
         // Specialized for the common case (~99.3%). Percentages below are relative to this.
         let mut round_up = false;
-        let vp_div100 = div100(vp);
-        let vm_div100 = div100(vm);
-        // Optimization: remove two digits at a time (~86.2%).
-        if vp_div100 > vm_div100 {
+        // Optimization: remove two digits at a time.
+        loop {
+            let vp_div100 = div100(vp);
+            let vm_div100 = div100(vm);
+            if vp_div100 <= vm_div100 {
+                break;
+            }
             let vr_div100 = div100(vr);
-            let vr_mod100 = (vr - 100 * vr_div100) as u32;
-            round_up = vr_mod100 >= 50;
+            round_up = (vr - 100 * vr_div100) >= 50;
             vr = vr_div100;
             vp = vp_div100;
             vm = vm_div100;
-            removed += 2;
+            e10 += 2;
         }
-        // Loop iterations below (approximately), without optimization above:
-        // 0: 0.03%, 1: 13.8%, 2: 70.6%, 3: 14.0%, 4: 1.40%, 5: 0.14%, 6+: 0.02%
-        // Loop iterations below (approximately), with optimization above:
-        // 0: 70.6%, 1: 27.8%, 2: 1.40%, 3: 0.14%, 4+: 0.02%
-        loop {
-            let vp_div10 = div10(vp);
-            let vm_div10 = div10(vm);
-            if vp_div10 <= vm_div10 {
-                break;
-            }
+        let vm_div10 = div10(vm);
+        if div10(vp) > vm_div10 {
             let vr_div10 = div10(vr);
-            let vr_mod10 = (vr - 10 * vr_div10) as u32;
-            round_up = vr_mod10 >= 5;
+            round_up = (vr - 10 * vr_div10) >= 5;
             vr = vr_div10;
-            vp = vp_div10;
             vm = vm_div10;
-            removed += 1;
+            e10 += 1;
         }
         // We need to take vr + 1 if vr is outside bounds or we need to round up.
-        vr + (vr == vm || round_up) as u64
+        vr += (round_up || vr == vm) as u64
     };
-    let exp = e10 + removed;
 
     FloatingDecimal64 {
-        exponent: exp,
-        mantissa: output,
+        exponent: e10,
+        mantissa: vr,
     }
 }
 

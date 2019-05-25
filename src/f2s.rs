@@ -240,7 +240,7 @@ pub fn f2d(ieee_mantissa: u32, ieee_exponent: u32) -> FloatingDecimal32 {
     let mut vr: u32;
     let mut vp: u32;
     let mut vm: u32;
-    let e10: i32;
+    let mut e10: i32;
     let mut vm_is_trailing_zeros = false;
     let mut vr_is_trailing_zeros = false;
     let mut last_removed_digit = 0u8;
@@ -302,8 +302,7 @@ pub fn f2d(ieee_mantissa: u32, ieee_exponent: u32) -> FloatingDecimal32 {
     }
 
     // Step 4: Find the shortest decimal representation in the interval of valid representations.
-    let mut removed = 0i32;
-    let output = if vm_is_trailing_zeros || vr_is_trailing_zeros {
+    if vm_is_trailing_zeros || vr_is_trailing_zeros {
         // General case, which happens rarely (~4.0%).
         while vp / 10 > vm / 10 {
             vm_is_trailing_zeros &= vm - (vm / 10) * 10 == 0;
@@ -312,7 +311,7 @@ pub fn f2d(ieee_mantissa: u32, ieee_exponent: u32) -> FloatingDecimal32 {
             vr /= 10;
             vp /= 10;
             vm /= 10;
-            removed += 1;
+            e10 += 1;
         }
         if vm_is_trailing_zeros {
             while vm % 10 == 0 {
@@ -321,7 +320,7 @@ pub fn f2d(ieee_mantissa: u32, ieee_exponent: u32) -> FloatingDecimal32 {
                 vr /= 10;
                 vp /= 10;
                 vm /= 10;
-                removed += 1;
+                e10 += 1;
             }
         }
         if vr_is_trailing_zeros && last_removed_digit == 5 && vr % 2 == 0 {
@@ -329,27 +328,39 @@ pub fn f2d(ieee_mantissa: u32, ieee_exponent: u32) -> FloatingDecimal32 {
             last_removed_digit = 4;
         }
         // We need to take vr + 1 if vr is outside bounds or we need to round up.
-        vr + ((vr == vm && (!accept_bounds || !vm_is_trailing_zeros)) || last_removed_digit >= 5)
-            as u32
+        vr += ((vr == vm && (!accept_bounds || !vm_is_trailing_zeros)) || last_removed_digit >= 5) as u32
     } else {
         // Specialized for the common case (~96.0%). Percentages below are relative to this.
-        // Loop iterations below (approximately):
-        // 0: 13.6%, 1: 70.7%, 2: 14.1%, 3: 1.39%, 4: 0.14%, 5+: 0.01%
-        while vp / 10 > vm / 10 {
-            last_removed_digit = (vr % 10) as u8;
-            vr /= 10;
-            vp /= 10;
-            vm /= 10;
-            removed += 1;
+        let mut round_up = last_removed_digit >= 5;
+        // Optimization: remove two digits at a time.
+        loop {
+            let vp_div100 = vp / 100;
+            let vm_div100 = vm / 100;
+            if vp_div100 <= vm_div100 {
+                break;
+            }
+            let vr_div100 = vr / 100;
+            round_up = (vr - 100 * vr_div100) >= 50;
+            vr = vr_div100;
+            vp = vp_div100;
+            vm = vm_div100;
+            e10 += 2;
+        }
+        let vm_div10 = vm / 10;
+        if vp / 10 > vm_div10 {
+            let vr_div10 = vr / 10;
+            round_up = (vr - 10 * vr_div10) >= 5;
+            vr = vr_div10;
+            vm = vm_div10;
+            e10 += 1;
         }
         // We need to take vr + 1 if vr is outside bounds or we need to round up.
-        vr + (vr == vm || last_removed_digit >= 5) as u32
+        vr += (round_up || vr == vm) as u32
     };
-    let exp = e10 + removed;
 
     FloatingDecimal32 {
-        exponent: exp,
-        mantissa: output,
+        exponent: e10,
+        mantissa: vr,
     }
 }
 
