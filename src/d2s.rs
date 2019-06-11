@@ -258,11 +258,10 @@ pub fn d2d(ieee_mantissa: u64, ieee_exponent: u32) -> FloatingDecimal64 {
             }
         } else if q < 63 {
             // TODO(ulfjack): Use a tighter bound here.
-            // We need to compute min(ntz(mv), pow5_factor(mv) - e2) >= q - 1
-            // <=> ntz(mv) >= q - 1  &&  pow5_factor(mv) - e2 >= q - 1
-            // <=> ntz(mv) >= q - 1    (e2 is negative and -e2 >= q)
-            // <=> (mv & ((1 << (q - 1)) - 1)) == 0
-            // We also need to make sure that the left shift does not overflow.
+            // We want to know if the full product has at least q trailing zeros.
+            // We need to compute min(p2(mv), p5(mv) - e2) >= q
+            // <=> p2(mv) >= q && p5(mv) - e2 >= q
+            // <=> p2(mv) >= q (because -e2 >= q)
             vr_is_trailing_zeros = multiple_of_power_of_2(mv, q);
         }
     }
