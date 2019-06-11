@@ -23,7 +23,7 @@ uses nothing from the Rust standard library so is usable from no_std crates.*
 
 ```toml
 [dependencies]
-ryu = "0.2"
+ryu = "1.0"
 ```
 
 ## Example
