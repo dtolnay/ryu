@@ -13,12 +13,7 @@ includes a complete correctness proof of the algorithm. The paper is available
 under the creative commons CC-BY-SA license.
 
 This Rust implementation is a line-by-line port of Ulf Adams' implementation in
-C, [https://github.com/ulfjack/ryu][upstream]. The `ryu::raw` module exposes
-exactly the API and formatting of the C implementation as unsafe pure Rust
-functions. There is additionally a safe API as demonstrated in the example code
-below. The safe API uses the same underlying Ryū algorithm but diverges from the
-formatting of the C implementation to produce more human-readable output, for
-example `0.3` rather than `3E-1`.
+C, [https://github.com/ulfjack/ryu][upstream].
 
 *Requirements: this crate supports any compiler version back to rustc 1.15; it
 uses nothing from the Rust standard library so is usable from no_std crates.*

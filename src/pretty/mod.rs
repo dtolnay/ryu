@@ -13,8 +13,7 @@ use f2s::*;
 #[cfg(feature = "no-panic")]
 use no_panic::no_panic;
 
-/// Print f64 to the given buffer and return number of bytes written. Human
-/// readable formatting.
+/// Print f64 to the given buffer and return number of bytes written.
 ///
 /// At most 24 bytes will be written.
 ///
@@ -118,8 +117,7 @@ pub unsafe fn d2s_buffered_n(f: f64, result: *mut u8) -> usize {
     }
 }
 
-/// Print f32 to the given buffer and return number of bytes written. Human
-/// readable formatting.
+/// Print f32 to the given buffer and return number of bytes written.
 ///
 /// At most 16 bytes will be written.
 ///

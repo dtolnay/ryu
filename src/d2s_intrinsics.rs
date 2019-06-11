@@ -72,8 +72,3 @@ pub fn div10(x: u64) -> u64 {
 pub fn div100(x: u64) -> u64 {
     x / 100
 }
-
-#[cfg_attr(feature = "no-panic", inline)]
-pub fn div100_000_000(x: u64) -> u64 {
-    x / 100_000_000
-}

@@ -18,8 +18,6 @@
 // is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 // KIND, either express or implied.
 
-use core::ptr;
-
 // Returns e == 0 ? 1 : ceil(log_2(5^e)).
 #[cfg_attr(feature = "no-panic", inline)]
 pub fn pow5bits(e: i32) -> i32 {
@@ -47,26 +45,4 @@ pub fn log10_pow5(e: i32) -> u32 {
     debug_assert!(e >= 0);
     debug_assert!(e <= 2620);
     (e as u32 * 732923) >> 20
-}
-
-#[cfg_attr(feature = "no-panic", inline)]
-pub unsafe fn copy_special_str(
-    result: *mut u8,
-    sign: bool,
-    exponent: bool,
-    mantissa: bool,
-) -> usize {
-    if mantissa {
-        ptr::copy_nonoverlapping(b"NaN".as_ptr(), result, 3);
-        return 3;
-    }
-    if sign {
-        *result = b'-';
-    }
-    if exponent {
-        ptr::copy_nonoverlapping(b"Infinity".as_ptr(), result.offset(sign as isize), 8);
-        return sign as usize + 8;
-    }
-    ptr::copy_nonoverlapping(b"0E0".as_ptr(), result.offset(sign as isize), 3);
-    sign as usize + 3
 }
