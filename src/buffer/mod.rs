@@ -70,14 +70,15 @@ impl Default for Buffer {
 ///
 /// This trait is sealed and cannot be implemented for types outside of the
 /// `ryu` crate.
-pub trait Float: Sealed {
-    // Not public API.
-    #[doc(hidden)]
+pub trait Float: Sealed {}
+impl Float for f32 {}
+impl Float for f64 {}
+
+pub trait Sealed {
     unsafe fn write_to_ryu_buffer(self, result: *mut u8) -> usize;
 }
 
-impl Float for f32 {
-    #[doc(hidden)]
+impl Sealed for f32 {
     #[inline]
     #[cfg_attr(feature = "no-panic", no_panic)]
     unsafe fn write_to_ryu_buffer(self, result: *mut u8) -> usize {
@@ -85,15 +86,10 @@ impl Float for f32 {
     }
 }
 
-impl Float for f64 {
-    #[doc(hidden)]
+impl Sealed for f64 {
     #[inline]
     #[cfg_attr(feature = "no-panic", no_panic)]
     unsafe fn write_to_ryu_buffer(self, result: *mut u8) -> usize {
         raw::format64(self, result)
     }
 }
-
-pub trait Sealed {}
-impl Sealed for f32 {}
-impl Sealed for f64 {}
