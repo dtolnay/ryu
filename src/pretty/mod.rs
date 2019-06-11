@@ -5,9 +5,9 @@ use core::{mem, ptr};
 
 use self::exponent::*;
 use self::mantissa::*;
+use common;
 use d2s;
 use d2s::*;
-use f2s;
 use f2s::*;
 
 #[cfg(feature = "no-panic")]
@@ -70,7 +70,7 @@ pub unsafe fn format64(f: f64, result: *mut u8) -> usize {
 
     let v = d2d(ieee_mantissa, ieee_exponent);
 
-    let length = d2s::decimal_length(v.mantissa) as isize;
+    let length = d2s::decimal_length17(v.mantissa) as isize;
     let k = v.exponent as isize;
     let kk = length + k; // 10^(kk-1) <= v < 10^kk
     debug_assert!(k >= -324);
@@ -175,7 +175,7 @@ pub unsafe fn format32(f: f32, result: *mut u8) -> usize {
 
     let v = f2d(ieee_mantissa, ieee_exponent);
 
-    let length = f2s::decimal_length(v.mantissa) as isize;
+    let length = common::decimal_length9(v.mantissa) as isize;
     let k = v.exponent as isize;
     let kk = length + k; // 10^(kk-1) <= v < 10^kk
     debug_assert!(k >= -45);

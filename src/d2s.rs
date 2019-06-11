@@ -34,36 +34,6 @@ const DOUBLE_BIAS: i32 = 1023;
 const DOUBLE_POW5_INV_BITCOUNT: i32 = 122;
 const DOUBLE_POW5_BITCOUNT: i32 = 121;
 
-#[cfg_attr(feature = "no-panic", inline)]
-fn pow5_factor(mut value: u64) -> u32 {
-    let mut count = 0u32;
-    loop {
-        debug_assert!(value != 0);
-        let q = div5(value);
-        let r = (value as u32).wrapping_sub(5u32.wrapping_mul(q as u32));
-        if r != 0 {
-            break;
-        }
-        value = q;
-        count += 1;
-    }
-    count
-}
-
-// Returns true if value is divisible by 5^p.
-#[cfg_attr(feature = "no-panic", inline)]
-fn multiple_of_power_of_5(value: u64, p: u32) -> bool {
-    // I tried a case distinction on p, but there was no performance difference.
-    pow5_factor(value) >= p
-}
-
-// Returns true if value is divisible by 2^p.
-#[cfg_attr(feature = "no-panic", inline)]
-fn multiple_of_power_of_2(value: u64, p: u32) -> bool {
-    // return __builtin_ctzll(value) >= p;
-    (value & ((1u64 << p) - 1)) == 0
-}
-
 #[cfg(integer128)]
 #[cfg_attr(feature = "no-panic", inline)]
 fn mul_shift(m: u64, mul: &(u64, u64), j: u32) -> u64 {
@@ -128,7 +98,7 @@ fn mul_shift_all(
 }
 
 #[cfg_attr(feature = "no-panic", inline)]
-pub fn decimal_length(v: u64) -> u32 {
+pub fn decimal_length17(v: u64) -> u32 {
     // This is slightly faster than a loop.
     // The average output length is 16.38 digits, so we check high-to-low.
     // Function precondition: v is not an 18, 19, or 20-digit number.
