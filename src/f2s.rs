@@ -176,6 +176,8 @@ fn mul_pow5_div_pow2(m: u32, i: u32, j: i32) -> u32 {
 // A floating decimal representing m * 10^e.
 pub struct FloatingDecimal32 {
     pub mantissa: u32,
+    // Decimal exponent's range is -45 to 38
+    // inclusive, and can fit in i16 if needed.
     pub exponent: i32,
 }
 
