@@ -263,7 +263,7 @@ pub fn d2d(ieee_mantissa: u64, ieee_exponent: u32) -> FloatingDecimal64 {
             // <=> ntz(mv) >= q - 1    (e2 is negative and -e2 >= q)
             // <=> (mv & ((1 << (q - 1)) - 1)) == 0
             // We also need to make sure that the left shift does not overflow.
-            vr_is_trailing_zeros = multiple_of_power_of_2(mv, q - 1);
+            vr_is_trailing_zeros = multiple_of_power_of_2(mv, q);
         }
     }
 
