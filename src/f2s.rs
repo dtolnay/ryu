@@ -20,9 +20,6 @@
 
 use common::*;
 
-#[cfg(feature = "no-panic")]
-use no_panic::no_panic;
-
 pub const FLOAT_MANTISSA_BITS: u32 = 23;
 pub const FLOAT_EXPONENT_BITS: u32 = 8;
 

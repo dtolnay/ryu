@@ -27,9 +27,6 @@ use d2s_intrinsics::*;
 #[cfg(feature = "small")]
 use d2s_small_table::*;
 
-#[cfg(feature = "no-panic")]
-use no_panic::no_panic;
-
 pub const DOUBLE_MANTISSA_BITS: u32 = 52;
 pub const DOUBLE_EXPONENT_BITS: u32 = 11;
 

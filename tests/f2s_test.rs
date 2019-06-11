@@ -49,7 +49,7 @@ fn test_random() {
     let mut buffer = ryu::Buffer::new();
     for _ in 0..1000000 {
         let f: f32 = rand::random();
-        assert_eq!(f, buffer.format(f).parse().unwrap());
+        assert_eq!(f, buffer.format_finite(f).parse().unwrap());
     }
 }
 
@@ -58,7 +58,7 @@ fn test_non_finite() {
     for i in 0u32..1 << 23 {
         let f = f32::from_bits((((1 << 8) - 1) << 23) + i);
         assert!(!f.is_finite(), "f={}", f);
-        ryu::Buffer::new().format(f);
+        ryu::Buffer::new().format_finite(f);
     }
 }
 
@@ -68,6 +68,9 @@ fn test_basic() {
     check!(-0.0);
     check!(1.0);
     check!(-1.0);
+    assert_eq!(pretty(f32::NAN), "NaN");
+    assert_eq!(pretty(f32::INFINITY), "inf");
+    assert_eq!(pretty(f32::NEG_INFINITY), "-inf");
 }
 
 #[test]
