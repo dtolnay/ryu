@@ -18,7 +18,7 @@ macro_rules! benches {
 
                     b.iter(move || {
                         let value = black_box($value);
-                        let formatted = buf.format(value);
+                        let formatted = buf.format_finite(value);
                         black_box(formatted);
                     });
                 }
