@@ -77,6 +77,7 @@ pub trait Float: Sealed {
 }
 
 impl Float for f32 {
+    #[doc(hidden)]
     #[inline]
     #[cfg_attr(feature = "no-panic", no_panic)]
     unsafe fn write_to_ryu_buffer(self, result: *mut u8) -> usize {
@@ -85,6 +86,7 @@ impl Float for f32 {
 }
 
 impl Float for f64 {
+    #[doc(hidden)]
     #[inline]
     #[cfg_attr(feature = "no-panic", no_panic)]
     unsafe fn write_to_ryu_buffer(self, result: *mut u8) -> usize {
