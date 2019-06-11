@@ -42,9 +42,10 @@ use no_panic::no_panic;
 ///
 /// unsafe {
 ///     let mut buffer: [u8; 24] = std::mem::uninitialized();
-///     let n = ryu::raw::format64(f, &mut buffer[0]);
-///     let s = std::str::from_utf8_unchecked(&buffer[..n]);
-///     assert_eq!(s, "1.234");
+///     let len = ryu::raw::format64(f, buffer.as_mut_ptr());
+///     let slice = std::slice::from_raw_parts(buffer.as_ptr(), len);
+///     let print = std::str::from_utf8_unchecked(slice);
+///     assert_eq!(print, "1.234");
 /// }
 /// ```
 #[cfg_attr(must_use_return, must_use)]
@@ -146,9 +147,10 @@ pub unsafe fn format64(f: f64, result: *mut u8) -> usize {
 ///
 /// unsafe {
 ///     let mut buffer: [u8; 16] = std::mem::uninitialized();
-///     let n = ryu::raw::format32(f, &mut buffer[0]);
-///     let s = std::str::from_utf8_unchecked(&buffer[..n]);
-///     assert_eq!(s, "1.234");
+///     let len = ryu::raw::format32(f, buffer.as_mut_ptr());
+///     let slice = std::slice::from_raw_parts(buffer.as_ptr(), len);
+///     let print = std::str::from_utf8_unchecked(slice);
+///     assert_eq!(print, "1.234");
 /// }
 /// ```
 #[cfg_attr(must_use_return, must_use)]
