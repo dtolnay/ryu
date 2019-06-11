@@ -40,7 +40,7 @@ fn pow5_factor(mut value: u64) -> u32 {
     loop {
         debug_assert!(value != 0);
         let q = div5(value);
-        let r = value as u32 - 5 * q as u32;
+        let r = (value as u32).wrapping_sub(5u32.wrapping_mul(q as u32));
         if r != 0 {
             break;
         }
@@ -237,7 +237,7 @@ pub fn d2d(ieee_mantissa: u64, ieee_exponent: u32) -> FloatingDecimal64 {
             // This should use q <= 22, but I think 21 is also safe. Smaller values
             // may still be safe, but it's more difficult to reason about them.
             // Only one of mp, mv, and mm can be a multiple of 5, if any.
-            let mv_mod5 = mv as u32 - 5 * div5(mv) as u32;
+            let mv_mod5 = (mv as u32).wrapping_sub(5u32.wrapping_mul(div5(mv) as u32));
             if mv_mod5 == 0 {
                 vr_is_trailing_zeros = multiple_of_power_of_5(mv, q);
             } else if accept_bounds {
@@ -307,9 +307,9 @@ pub fn d2d(ieee_mantissa: u64, ieee_exponent: u32) -> FloatingDecimal64 {
             if vp_div10 <= vm_div10 {
                 break;
             }
-            let vm_mod10 = vm as u32 - 10 * vm_div10 as u32;
+            let vm_mod10 = (vm as u32).wrapping_sub(10u32.wrapping_mul(vm_div10 as u32));
             let vr_div10 = div10(vr);
-            let vr_mod10 = vr as u32 - 10 * vr_div10 as u32;
+            let vr_mod10 = (vr as u32).wrapping_sub(10u32.wrapping_mul(vr_div10 as u32));
             vm_is_trailing_zeros &= vm_mod10 == 0;
             vr_is_trailing_zeros &= last_removed_digit == 0;
             last_removed_digit = vr_mod10 as u8;
@@ -321,13 +321,13 @@ pub fn d2d(ieee_mantissa: u64, ieee_exponent: u32) -> FloatingDecimal64 {
         if vm_is_trailing_zeros {
             loop {
                 let vm_div10 = div10(vm);
-                let vm_mod10 = vm as u32 - 10 * vm_div10 as u32;
+                let vm_mod10 = (vm as u32).wrapping_sub(10u32.wrapping_mul(vm_div10 as u32));
                 if vm_mod10 != 0 {
                     break;
                 }
                 let vp_div10 = div10(vp);
                 let vr_div10 = div10(vr);
-                let vr_mod10 = vr as u32 - 10 * vr_div10 as u32;
+                let vr_mod10 = (vr as u32).wrapping_sub(10u32.wrapping_mul(vr_div10 as u32));
                 vr_is_trailing_zeros &= last_removed_digit == 0;
                 last_removed_digit = vr_mod10 as u8;
                 vr = vr_div10;
@@ -351,7 +351,7 @@ pub fn d2d(ieee_mantissa: u64, ieee_exponent: u32) -> FloatingDecimal64 {
         // Optimization: remove two digits at a time (~86.2%).
         if vp_div100 > vm_div100 {
             let vr_div100 = div100(vr);
-            let vr_mod100 = vr as u32 - 100 * vr_div100 as u32;
+            let vr_mod100 = (vr as u32).wrapping_sub(100u32.wrapping_mul(vr_div100 as u32));
             round_up = vr_mod100 >= 50;
             vr = vr_div100;
             vp = vp_div100;
@@ -369,7 +369,7 @@ pub fn d2d(ieee_mantissa: u64, ieee_exponent: u32) -> FloatingDecimal64 {
                 break;
             }
             let vr_div10 = div10(vr);
-            let vr_mod10 = vr as u32 - 10 * vr_div10 as u32;
+            let vr_mod10 = (vr as u32).wrapping_sub(10u32.wrapping_mul(vr_div10 as u32));
             round_up = vr_mod10 >= 5;
             vr = vr_div10;
             vp = vp_div10;
