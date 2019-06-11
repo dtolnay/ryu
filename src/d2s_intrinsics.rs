@@ -44,7 +44,7 @@ pub fn umul128(a: u64, b: u64) -> (u64, u64) {
     let mid2_hi = (mid2 >> 32) as u32;
 
     let p_hi = b11 + mid1_hi as u64 + mid2_hi as u64;
-    let p_lo = ((mid2_lo as u64) << 32) + b00_lo as u64;
+    let p_lo = ((mid2_lo as u64) << 32) | b00_lo as u64;
 
     (p_lo, p_hi)
 }
