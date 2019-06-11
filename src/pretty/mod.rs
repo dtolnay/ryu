@@ -42,14 +42,14 @@ use no_panic::no_panic;
 ///
 /// unsafe {
 ///     let mut buffer: [u8; 24] = std::mem::uninitialized();
-///     let n = ryu::raw::pretty_d2s_buffered_n(f, &mut buffer[0]);
+///     let n = ryu::raw::format64(f, &mut buffer[0]);
 ///     let s = std::str::from_utf8_unchecked(&buffer[..n]);
 ///     assert_eq!(s, "1.234");
 /// }
 /// ```
 #[cfg_attr(must_use_return, must_use)]
 #[cfg_attr(feature = "no-panic", no_panic)]
-pub unsafe fn d2s_buffered_n(f: f64, result: *mut u8) -> usize {
+pub unsafe fn format64(f: f64, result: *mut u8) -> usize {
     let bits = mem::transmute::<f64, u64>(f);
     let sign = ((bits >> (DOUBLE_MANTISSA_BITS + DOUBLE_EXPONENT_BITS)) & 1) != 0;
     let ieee_mantissa = bits & ((1u64 << DOUBLE_MANTISSA_BITS) - 1);
@@ -146,14 +146,14 @@ pub unsafe fn d2s_buffered_n(f: f64, result: *mut u8) -> usize {
 ///
 /// unsafe {
 ///     let mut buffer: [u8; 16] = std::mem::uninitialized();
-///     let n = ryu::raw::pretty_f2s_buffered_n(f, &mut buffer[0]);
+///     let n = ryu::raw::format32(f, &mut buffer[0]);
 ///     let s = std::str::from_utf8_unchecked(&buffer[..n]);
 ///     assert_eq!(s, "1.234");
 /// }
 /// ```
 #[cfg_attr(must_use_return, must_use)]
 #[cfg_attr(feature = "no-panic", no_panic)]
-pub unsafe fn f2s_buffered_n(f: f32, result: *mut u8) -> usize {
+pub unsafe fn format32(f: f32, result: *mut u8) -> usize {
     let bits = mem::transmute::<f32, u32>(f);
     let sign = ((bits >> (FLOAT_MANTISSA_BITS + FLOAT_EXPONENT_BITS)) & 1) != 0;
     let ieee_mantissa = bits & ((1u32 << FLOAT_MANTISSA_BITS) - 1);

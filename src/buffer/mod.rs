@@ -1,6 +1,6 @@
 use core::{mem, slice, str};
 
-use pretty;
+use raw;
 
 #[cfg(feature = "no-panic")]
 use no_panic::no_panic;
@@ -80,7 +80,7 @@ impl Float for f32 {
     #[inline]
     #[cfg_attr(feature = "no-panic", no_panic)]
     unsafe fn write_to_ryu_buffer(self, result: *mut u8) -> usize {
-        pretty::f2s_buffered_n(self, result)
+        raw::format32(self, result)
     }
 }
 
@@ -88,7 +88,7 @@ impl Float for f64 {
     #[inline]
     #[cfg_attr(feature = "no-panic", no_panic)]
     unsafe fn write_to_ryu_buffer(self, result: *mut u8) -> usize {
-        pretty::d2s_buffered_n(self, result)
+        raw::format64(self, result)
     }
 }
 

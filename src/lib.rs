@@ -107,6 +107,5 @@ pub use buffer::{Buffer, Float};
 
 /// Unsafe functions that mirror the API of the C implementation of Ryū.
 pub mod raw {
-    pub use pretty::d2s_buffered_n as pretty_d2s_buffered_n;
-    pub use pretty::f2s_buffered_n as pretty_f2s_buffered_n;
+    pub use pretty::{format32, format64};
 }
