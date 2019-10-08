@@ -1,4 +1,7 @@
-use core::{mem::{self, MaybeUninit}, slice, str};
+use core::{mem, slice, str};
+
+#[cfg(maybe_uninit)]
+use core::mem::MaybeUninit;
 
 use raw;
 
@@ -20,7 +23,10 @@ const NEG_INFINITY: &'static str = "-inf";
 /// ```
 #[derive(Copy, Clone)]
 pub struct Buffer {
+    #[cfg(maybe_uninit)]
     bytes: [MaybeUninit<u8>; 24],
+    #[cfg(not(maybe_uninit))]
+    bytes: [u8; 24],
 }
 
 impl Buffer {
@@ -32,7 +38,10 @@ impl Buffer {
         Buffer {
             // assume_init is safe here, since this is an array of MaybeUninit, which does not need
             // to be initialized.
+            #[cfg(maybe_uninit)]
             bytes: unsafe { MaybeUninit::uninit().assume_init() },
+            #[cfg(not(maybe_uninit))]
+            bytes: unsafe { mem::uninitialized() },
         }
     }
 
@@ -76,11 +85,35 @@ impl Buffer {
     #[cfg_attr(feature = "no-panic", no_panic)]
     pub fn format_finite<F: Float>(&mut self, f: F) -> &str {
         unsafe {
-            let n = f.write_to_ryu_buffer(self.bytes[0].as_mut_ptr());
+            let n = f.write_to_ryu_buffer(self.first_byte_pointer_mut());
             debug_assert!(n <= self.bytes.len());
-            let slice = slice::from_raw_parts(self.bytes[0].as_ptr(), n);
+            let slice = slice::from_raw_parts(self.first_byte_pointer(), n);
             str::from_utf8_unchecked(slice)
         }
+    }
+
+    #[inline]
+    #[cfg(maybe_uninit)]
+    fn first_byte_pointer(&self) -> *const u8 {
+        self.bytes[0].as_ptr()
+    }
+
+    #[inline]
+    #[cfg(not(maybe_uninit))]
+    fn first_byte_pointer(&self) -> *const u8 {
+        &self.bytes[0] as *const u8
+    }
+
+    #[inline]
+    #[cfg(maybe_uninit)]
+    fn first_byte_pointer_mut(&mut self) -> *mut u8 {
+        self.bytes[0].as_mut_ptr()
+    }
+
+    #[inline]
+    #[cfg(not(maybe_uninit))]
+    fn first_byte_pointer_mut(&mut self) -> *mut u8 {
+        &mut self.bytes[0] as *mut u8
     }
 }
 

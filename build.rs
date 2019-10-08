@@ -28,6 +28,12 @@ fn main() {
     if minor >= 27 {
         println!("cargo:rustc-cfg=must_use_return");
     }
+
+    // MaybeUninit<T> stabilized in Rust 1.36:
+    // https://blog.rust-lang.org/2019/07/04/Rust-1.36.0.html
+    if minor >= 36 {
+        println!("cargo:rustc-cfg=maybe_uninit");
+    }
 }
 
 fn rustc_minor_version() -> Option<u32> {
