@@ -18,7 +18,7 @@
 // is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 // KIND, either express or implied.
 
-use core::mem;
+use core::{mem::MaybeUninit, ptr};
 
 use common::*;
 #[cfg(not(feature = "small"))]
@@ -48,12 +48,14 @@ fn mul_shift_all(
     m: u64,
     mul: &(u64, u64),
     j: u32,
-    vp: &mut u64,
-    vm: &mut u64,
+    vp: *mut u64,
+    vm: *mut u64,
     mm_shift: u32,
 ) -> u64 {
-    *vp = mul_shift(4 * m + 2, mul, j);
-    *vm = mul_shift(4 * m - 1 - mm_shift as u64, mul, j);
+    unsafe {
+        ptr::write(vp, mul_shift(4 * m + 2, mul, j));
+        ptr::write(vm, mul_shift(4 * m - 1 - mm_shift as u64, mul, j));
+    }
     mul_shift(4 * m, mul, j)
 }
 
@@ -177,8 +179,10 @@ pub fn d2d(ieee_mantissa: u64, ieee_exponent: u32) -> FloatingDecimal64 {
 
     // Step 3: Convert to a decimal power base using 128-bit arithmetic.
     let mut vr: u64;
-    let mut vp: u64 = unsafe { mem::uninitialized() };
-    let mut vm: u64 = unsafe { mem::uninitialized() };
+    let mut vp: u64;
+    let mut vm: u64;
+    let mut vp_uninit: MaybeUninit<u64> = MaybeUninit::uninit();
+    let mut vm_uninit: MaybeUninit<u64> = MaybeUninit::uninit();
     let e10: i32;
     let mut vm_is_trailing_zeros = false;
     let mut vr_is_trailing_zeros = false;
@@ -201,10 +205,12 @@ pub fn d2d(ieee_mantissa: u64, ieee_exponent: u32) -> FloatingDecimal64 {
                 DOUBLE_POW5_INV_SPLIT.get_unchecked(q as usize)
             },
             i as u32,
-            &mut vp,
-            &mut vm,
+            vp_uninit.as_mut_ptr(),
+            vm_uninit.as_mut_ptr(),
             mm_shift,
         );
+        vp = unsafe { vp_uninit.assume_init() };
+        vm = unsafe { vm_uninit.assume_init() };
         if q <= 21 {
             // This should use q <= 22, but I think 21 is also safe. Smaller values
             // may still be safe, but it's more difficult to reason about them.
@@ -241,10 +247,12 @@ pub fn d2d(ieee_mantissa: u64, ieee_exponent: u32) -> FloatingDecimal64 {
                 DOUBLE_POW5_SPLIT.get_unchecked(i as usize)
             },
             j as u32,
-            &mut vp,
-            &mut vm,
+            vp_uninit.as_mut_ptr(),
+            vm_uninit.as_mut_ptr(),
             mm_shift,
         );
+        vp = unsafe { vp_uninit.assume_init() };
+        vm = unsafe { vm_uninit.assume_init() };
         if q <= 1 {
             // {vr,vp,vm} is trailing zeros if {mv,mp,mm} has at least q trailing 0 bits.
             // mv = 4 * m2, so it always has at least two trailing 0 bits.

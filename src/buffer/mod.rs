@@ -1,4 +1,4 @@
-use core::{mem, slice, str};
+use core::{mem::{self, MaybeUninit}, slice, str};
 
 use raw;
 
@@ -20,7 +20,7 @@ const NEG_INFINITY: &'static str = "-inf";
 /// ```
 #[derive(Copy, Clone)]
 pub struct Buffer {
-    bytes: [u8; 24],
+    bytes: [MaybeUninit<u8>; 24],
 }
 
 impl Buffer {
@@ -30,7 +30,9 @@ impl Buffer {
     #[cfg_attr(feature = "no-panic", no_panic)]
     pub fn new() -> Self {
         Buffer {
-            bytes: unsafe { mem::uninitialized() },
+            // assume_init is safe here, since this is an array of MaybeUninit, which does not need
+            // to be initialized.
+            bytes: unsafe { MaybeUninit::uninit().assume_init() },
         }
     }
 
@@ -74,9 +76,9 @@ impl Buffer {
     #[cfg_attr(feature = "no-panic", no_panic)]
     pub fn format_finite<F: Float>(&mut self, f: F) -> &str {
         unsafe {
-            let n = f.write_to_ryu_buffer(&mut self.bytes[0]);
+            let n = f.write_to_ryu_buffer(self.bytes[0].as_mut_ptr());
             debug_assert!(n <= self.bytes.len());
-            let slice = slice::from_raw_parts(&self.bytes[0], n);
+            let slice = slice::from_raw_parts(self.bytes[0].as_ptr(), n);
             str::from_utf8_unchecked(slice)
         }
     }
