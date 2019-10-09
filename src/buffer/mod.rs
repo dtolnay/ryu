@@ -35,13 +35,15 @@ impl Buffer {
     #[inline]
     #[cfg_attr(feature = "no-panic", no_panic)]
     pub fn new() -> Self {
+        // assume_init is safe here, since this is an array of MaybeUninit, which does not need
+        // to be initialized.
+        #[cfg(maybe_uninit)]
+        let bytes = unsafe { MaybeUninit::uninit().assume_init() };
+        #[cfg(not(maybe_uninit))]
+        let bytes = unsafe { mem::uninitialized() };
+
         Buffer {
-            // assume_init is safe here, since this is an array of MaybeUninit, which does not need
-            // to be initialized.
-            #[cfg(maybe_uninit)]
-            bytes: unsafe { MaybeUninit::uninit().assume_init() },
-            #[cfg(not(maybe_uninit))]
-            bytes: unsafe { mem::uninitialized() },
+            bytes: bytes,
         }
     }
 
