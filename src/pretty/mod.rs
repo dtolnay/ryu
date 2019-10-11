@@ -38,12 +38,14 @@ use no_panic::no_panic;
 /// ## Example
 ///
 /// ```edition2018
+/// use std::mem::MaybeUninit;
+///
 /// let f = 1.234f64;
 ///
 /// unsafe {
-///     let mut buffer: [u8; 24] = std::mem::uninitialized();
-///     let len = ryu::raw::format64(f, buffer.as_mut_ptr());
-///     let slice = std::slice::from_raw_parts(buffer.as_ptr(), len);
+///     let mut buffer: [MaybeUninit<u8>; 24] = MaybeUninit::uninit().assume_init();
+///     let len = ryu::raw::format64(f, buffer.as_mut_ptr() as *mut u8);
+///     let slice = std::slice::from_raw_parts(buffer.as_ptr() as *const u8, len);
 ///     let print = std::str::from_utf8_unchecked(slice);
 ///     assert_eq!(print, "1.234");
 /// }
@@ -143,12 +145,14 @@ pub unsafe fn format64(f: f64, result: *mut u8) -> usize {
 /// ## Example
 ///
 /// ```edition2018
+/// use std::mem::MaybeUninit;
+///
 /// let f = 1.234f32;
 ///
 /// unsafe {
-///     let mut buffer: [u8; 16] = std::mem::uninitialized();
-///     let len = ryu::raw::format32(f, buffer.as_mut_ptr());
-///     let slice = std::slice::from_raw_parts(buffer.as_ptr(), len);
+///     let mut buffer: [MaybeUninit<u8>; 16] = MaybeUninit::uninit().assume_init();
+///     let len = ryu::raw::format32(f, buffer.as_mut_ptr() as *mut u8);
+///     let slice = std::slice::from_raw_parts(buffer.as_ptr() as *const u8, len);
 ///     let print = std::str::from_utf8_unchecked(slice);
 ///     assert_eq!(print, "1.234");
 /// }
