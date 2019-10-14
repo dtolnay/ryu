@@ -216,13 +216,21 @@ pub fn d2d(ieee_mantissa: u64, ieee_exponent: u32) -> FloatingDecimal64 {
                 },
                 i as u32,
                 #[cfg(maybe_uninit)]
-                { vp_uninit.as_mut_ptr() },
+                {
+                    vp_uninit.as_mut_ptr()
+                },
                 #[cfg(not(maybe_uninit))]
-                { &mut vp },
+                {
+                    &mut vp
+                },
                 #[cfg(maybe_uninit)]
-                { vm_uninit.as_mut_ptr() },
+                {
+                    vm_uninit.as_mut_ptr()
+                },
                 #[cfg(not(maybe_uninit))]
-                { &mut vm },
+                {
+                    &mut vm
+                },
                 mm_shift,
             )
         };
@@ -267,13 +275,21 @@ pub fn d2d(ieee_mantissa: u64, ieee_exponent: u32) -> FloatingDecimal64 {
                 },
                 j as u32,
                 #[cfg(maybe_uninit)]
-                { vp_uninit.as_mut_ptr() },
+                {
+                    vp_uninit.as_mut_ptr()
+                },
                 #[cfg(not(maybe_uninit))]
-                { &mut vp },
+                {
+                    &mut vp
+                },
                 #[cfg(maybe_uninit)]
-                { vm_uninit.as_mut_ptr() },
+                {
+                    vm_uninit.as_mut_ptr()
+                },
                 #[cfg(not(maybe_uninit))]
-                { &mut vm },
+                {
+                    &mut vm
+                },
                 mm_shift,
             )
         };
