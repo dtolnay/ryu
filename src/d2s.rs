@@ -50,7 +50,7 @@ fn mul_shift(m: u64, mul: &(u64, u64), j: u32) -> u64 {
 
 #[cfg(integer128)]
 #[cfg_attr(feature = "no-panic", inline)]
-fn mul_shift_all(
+unsafe fn mul_shift_all(
     m: u64,
     mul: &(u64, u64),
     j: u32,
@@ -58,16 +58,14 @@ fn mul_shift_all(
     vm: *mut u64,
     mm_shift: u32,
 ) -> u64 {
-    unsafe {
-        ptr::write(vp, mul_shift(4 * m + 2, mul, j));
-        ptr::write(vm, mul_shift(4 * m - 1 - mm_shift as u64, mul, j));
-    }
+    ptr::write(vp, mul_shift(4 * m + 2, mul, j));
+    ptr::write(vm, mul_shift(4 * m - 1 - mm_shift as u64, mul, j));
     mul_shift(4 * m, mul, j)
 }
 
 #[cfg(not(integer128))]
 #[cfg_attr(feature = "no-panic", inline)]
-fn mul_shift_all(
+unsafe fn mul_shift_all(
     mut m: u64,
     mul: &(u64, u64),
     j: u32,
@@ -85,17 +83,13 @@ fn mul_shift_all(
     let lo2 = lo.wrapping_add(mul.0);
     let mid2 = mid.wrapping_add(mul.1).wrapping_add((lo2 < lo) as u64);
     let hi2 = hi.wrapping_add((mid2 < mid) as u64);
-    unsafe {
-        ptr::write(vp, shiftright128(mid2, hi2, j - 64 - 1));
-    }
+    ptr::write(vp, shiftright128(mid2, hi2, j - 64 - 1));
 
     if mm_shift == 1 {
         let lo3 = lo.wrapping_sub(mul.0);
         let mid3 = mid.wrapping_sub(mul.1).wrapping_sub((lo3 > lo) as u64);
         let hi3 = hi.wrapping_sub((mid3 > mid) as u64);
-        unsafe {
-            ptr::write(vm, shiftright128(mid3, hi3, j - 64 - 1));
-        }
+        ptr::write(vm, shiftright128(mid3, hi3, j - 64 - 1));
     } else {
         let lo3 = lo + lo;
         let mid3 = mid.wrapping_add(mid).wrapping_add((lo3 < lo) as u64);
@@ -103,9 +97,7 @@ fn mul_shift_all(
         let lo4 = lo3.wrapping_sub(mul.0);
         let mid4 = mid3.wrapping_sub(mul.1).wrapping_sub((lo4 > lo3) as u64);
         let hi4 = hi3.wrapping_sub((mid4 > mid3) as u64);
-        unsafe {
-            ptr::write(vm, shiftright128(mid4, hi4, j - 64));
-        }
+        ptr::write(vm, shiftright128(mid4, hi4, j - 64));
     }
 
     shiftright128(mid, hi, j - 64 - 1)
@@ -212,28 +204,28 @@ pub fn d2d(ieee_mantissa: u64, ieee_exponent: u32) -> FloatingDecimal64 {
         e10 = q as i32;
         let k = DOUBLE_POW5_INV_BITCOUNT + pow5bits(q as i32) - 1;
         let i = -e2 + q as i32 + k;
-        vr = mul_shift_all(
-            m2,
-            #[cfg(feature = "small")]
-            unsafe {
-                &compute_inv_pow5(q)
-            },
-            #[cfg(not(feature = "small"))]
-            unsafe {
-                debug_assert!(q < DOUBLE_POW5_INV_SPLIT.len() as u32);
-                DOUBLE_POW5_INV_SPLIT.get_unchecked(q as usize)
-            },
-            i as u32,
-            #[cfg(maybe_uninit)]
-            { vp_uninit.as_mut_ptr() },
-            #[cfg(not(maybe_uninit))]
-            { &mut vp },
-            #[cfg(maybe_uninit)]
-            { vm_uninit.as_mut_ptr() },
-            #[cfg(not(maybe_uninit))]
-            { &mut vm },
-            mm_shift,
-        );
+        vr = unsafe {
+            mul_shift_all(
+                m2,
+                #[cfg(feature = "small")]
+                &compute_inv_pow5(q),
+                #[cfg(not(feature = "small"))]
+                {
+                    debug_assert!(q < DOUBLE_POW5_INV_SPLIT.len() as u32);
+                    DOUBLE_POW5_INV_SPLIT.get_unchecked(q as usize)
+                },
+                i as u32,
+                #[cfg(maybe_uninit)]
+                { vp_uninit.as_mut_ptr() },
+                #[cfg(not(maybe_uninit))]
+                { &mut vp },
+                #[cfg(maybe_uninit)]
+                { vm_uninit.as_mut_ptr() },
+                #[cfg(not(maybe_uninit))]
+                { &mut vm },
+                mm_shift,
+            )
+        };
         #[cfg(maybe_uninit)]
         {
             vp = unsafe { vp_uninit.assume_init() };
@@ -263,28 +255,28 @@ pub fn d2d(ieee_mantissa: u64, ieee_exponent: u32) -> FloatingDecimal64 {
         let i = -e2 - q as i32;
         let k = pow5bits(i) - DOUBLE_POW5_BITCOUNT;
         let j = q as i32 - k;
-        vr = mul_shift_all(
-            m2,
-            #[cfg(feature = "small")]
-            unsafe {
-                &compute_pow5(i as u32)
-            },
-            #[cfg(not(feature = "small"))]
-            unsafe {
-                debug_assert!(i < DOUBLE_POW5_SPLIT.len() as i32);
-                DOUBLE_POW5_SPLIT.get_unchecked(i as usize)
-            },
-            j as u32,
-            #[cfg(maybe_uninit)]
-            { vp_uninit.as_mut_ptr() },
-            #[cfg(not(maybe_uninit))]
-            { &mut vp },
-            #[cfg(maybe_uninit)]
-            { vm_uninit.as_mut_ptr() },
-            #[cfg(not(maybe_uninit))]
-            { &mut vm },
-            mm_shift,
-        );
+        vr = unsafe {
+            mul_shift_all(
+                m2,
+                #[cfg(feature = "small")]
+                &compute_pow5(i as u32),
+                #[cfg(not(feature = "small"))]
+                {
+                    debug_assert!(i < DOUBLE_POW5_SPLIT.len() as i32);
+                    DOUBLE_POW5_SPLIT.get_unchecked(i as usize)
+                },
+                j as u32,
+                #[cfg(maybe_uninit)]
+                { vp_uninit.as_mut_ptr() },
+                #[cfg(not(maybe_uninit))]
+                { &mut vp },
+                #[cfg(maybe_uninit)]
+                { vm_uninit.as_mut_ptr() },
+                #[cfg(not(maybe_uninit))]
+                { &mut vm },
+                mm_shift,
+            )
+        };
         #[cfg(maybe_uninit)]
         {
             vp = unsafe { vp_uninit.assume_init() };
