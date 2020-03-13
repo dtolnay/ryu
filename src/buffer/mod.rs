@@ -38,7 +38,7 @@ impl Buffer {
         // assume_init is safe here, since this is an array of MaybeUninit, which does not need
         // to be initialized.
         #[cfg(maybe_uninit)]
-        let bytes = unsafe { MaybeUninit::uninit().assume_init() };
+        let bytes = [MaybeUninit::<u8>::uninit(); 24];
         #[cfg(not(maybe_uninit))]
         let bytes = unsafe { mem::uninitialized() };
 
