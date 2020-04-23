@@ -20,4 +20,5 @@ matrix:
       name: Miri
       script:
         - rustup component add miri || travis_terminate 0
+        - cargo miri setup
         - cargo miri test
