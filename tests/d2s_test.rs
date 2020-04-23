@@ -51,13 +51,15 @@ fn test_ryu() {
 
 #[test]
 fn test_random() {
+    let n = if cfg!(miri) { 100 } else { 1000000 };
     let mut buffer = ryu::Buffer::new();
-    for _ in 0..1000000 {
+    for _ in 0..n {
         let f: f64 = rand::random();
         assert_eq!(f, buffer.format_finite(f).parse().unwrap());
     }
 }
 
+#[cfg(not(miri))]
 #[test]
 fn test_non_finite() {
     for i in 0u64..1 << 23 {
