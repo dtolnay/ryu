@@ -54,8 +54,8 @@ fn test_random() {
     }
 }
 
-#[cfg(not(miri))]
 #[test]
+#[cfg_attr(miri, ignore)]
 fn test_non_finite() {
     for i in 0u32..1 << 23 {
         let f = f32::from_bits((((1 << 8) - 1) << 23) + i);
