@@ -16,3 +16,8 @@ matrix:
       script:
         - cargo build
         - cargo build --features small
+    - rust: nightly
+      name: Miri
+      script:
+        - rustup component add miri || travis_terminate 0
+        - cargo miri test
