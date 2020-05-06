@@ -1,6 +1,6 @@
 # Ryū
 
-[![Build Status](https://api.travis-ci.org/dtolnay/ryu.svg?branch=master)](https://travis-ci.org/dtolnay/ryu)
+[![Build Status](https://img.shields.io/github/workflow/status/dtolnay/ryu/CI/master)](https://github.com/dtolnay/ryu/actions?query=branch%3Amaster)
 [![Latest Version](https://img.shields.io/crates/v/ryu.svg)](https://crates.io/crates/ryu)
 [![Rust Documentation](https://img.shields.io/badge/api-rustdoc-blue.svg)](https://docs.rs/ryu)
 [![Rustc Version 1.15+](https://img.shields.io/badge/rustc-1.15+-lightgray.svg)](https://blog.rust-lang.org/2017/02/02/Rust-1.15.html)
