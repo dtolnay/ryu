@@ -109,3 +109,37 @@ pub use buffer::{Buffer, Float};
 pub mod raw {
     pub use pretty::{format32, format64};
 }
+
+/// Functions for converting to and from floating decimals
+pub mod decimal {
+    #[cfg(feature = "no-panic")]
+    use no_panic::no_panic;
+    use d2s;
+    pub use d2s::FloatingDecimal64;
+    use core::mem;
+
+    /// Convert a floating point number to a floating decimal
+    #[cfg_attr(feature = "no-panic", inline)]
+    #[cfg_attr(feature = "no-panic", no_panic)]
+    pub fn d2d(val: f64) -> FloatingDecimal64 {
+        let bits: u64 = unsafe { mem::transmute(val) };
+        let ieee_mantissa = bits & ((1u64 << d2s::DOUBLE_MANTISSA_BITS) - 1);
+        let ieee_exponent =
+            (bits >> d2s::DOUBLE_MANTISSA_BITS) as u32 & ((1u32 << d2s::DOUBLE_EXPONENT_BITS) - 1);
+        d2s::d2d(ieee_mantissa, ieee_exponent)
+    }
+
+    use f2s;
+    pub use f2s::FloatingDecimal32;
+
+    /// Convert a floating point number to a floating decimal
+    #[cfg_attr(feature = "no-panic", inline)]
+    #[cfg_attr(feature = "no-panic", no_panic)]
+    pub fn f2d(val: f32) -> FloatingDecimal32 {
+        let bits: u32 = unsafe { mem::transmute(val) };
+        let ieee_mantissa = bits & ((1u32 << f2s::FLOAT_MANTISSA_BITS) - 1);
+        let ieee_exponent =
+            (bits >> f2s::FLOAT_MANTISSA_BITS) as u32 & ((1u32 << f2s::FLOAT_EXPONENT_BITS) - 1);
+        f2s::f2d(ieee_mantissa, ieee_exponent)
+    }
+}
