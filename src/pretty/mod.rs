@@ -47,7 +47,7 @@ use no_panic::no_panic;
 ///     assert_eq!(print, "1.234");
 /// }
 /// ```
-#[cfg_attr(must_use_return, must_use)]
+#[must_use]
 #[cfg_attr(feature = "no-panic", no_panic)]
 pub unsafe fn format64(f: f64, result: *mut u8) -> usize {
     let bits = mem::transmute::<f64, u64>(f);
@@ -154,7 +154,7 @@ pub unsafe fn format64(f: f64, result: *mut u8) -> usize {
 ///     assert_eq!(print, "1.234");
 /// }
 /// ```
-#[cfg_attr(must_use_return, must_use)]
+#[must_use]
 #[cfg_attr(feature = "no-panic", no_panic)]
 pub unsafe fn format32(f: f32, result: *mut u8) -> usize {
     let bits = mem::transmute::<f32, u32>(f);

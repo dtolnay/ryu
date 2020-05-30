@@ -20,12 +20,6 @@ fn main() {
         println!("cargo:rustc-cfg=integer128");
     }
 
-    // #[must_use] on functions stabilized in Rust 1.27:
-    // https://blog.rust-lang.org/2018/06/21/Rust-1.27.html
-    if minor >= 27 {
-        println!("cargo:rustc-cfg=must_use_return");
-    }
-
     // MaybeUninit<T> stabilized in Rust 1.36:
     // https://blog.rust-lang.org/2019/07/04/Rust-1.36.0.html
     if minor >= 36 {
