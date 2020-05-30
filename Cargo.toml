@@ -8,6 +8,7 @@ repository = "https://github.com/dtolnay/ryu"
 documentation = "https://docs.rs/ryu"
 readme = "README.md"
 build = "build.rs"
+edition = "2018"
 
 [features]
 # Use smaller lookup tables. Instead of storing every required power of

@@ -18,7 +18,7 @@
 // is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 // KIND, either express or implied.
 
-use common::*;
+use crate::common::*;
 
 pub const FLOAT_MANTISSA_BITS: u32 = 23;
 pub const FLOAT_EXPONENT_BITS: u32 = 8;

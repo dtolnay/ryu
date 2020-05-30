@@ -18,9 +18,9 @@
 // is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 // KIND, either express or implied.
 
-use common::*;
+use crate::common::*;
 #[cfg(not(integer128))]
-use d2s_intrinsics::*;
+use crate::d2s_intrinsics::*;
 
 pub static DOUBLE_POW5_TABLE: [u64; 26] = [
     1,

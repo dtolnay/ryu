@@ -103,9 +103,9 @@ mod digit_table;
 mod f2s;
 mod pretty;
 
-pub use buffer::{Buffer, Float};
+pub use crate::buffer::{Buffer, Float};
 
 /// Unsafe functions that mirror the API of the C implementation of Ryū.
 pub mod raw {
-    pub use pretty::{format32, format64};
+    pub use crate::pretty::{format32, format64};
 }

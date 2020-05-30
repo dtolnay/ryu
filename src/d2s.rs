@@ -26,12 +26,12 @@ use core::mem::MaybeUninit;
 #[cfg(not(maybe_uninit))]
 use core::mem;
 
-use common::*;
+use crate::common::*;
 #[cfg(not(feature = "small"))]
-use d2s_full_table::*;
-use d2s_intrinsics::*;
+use crate::d2s_full_table::*;
+use crate::d2s_intrinsics::*;
 #[cfg(feature = "small")]
-use d2s_small_table::*;
+use crate::d2s_small_table::*;
 
 pub const DOUBLE_MANTISSA_BITS: u32 = 52;
 pub const DOUBLE_EXPONENT_BITS: u32 = 11;

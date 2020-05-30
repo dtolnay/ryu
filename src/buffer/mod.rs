@@ -3,7 +3,7 @@ use core::{mem, slice, str};
 #[cfg(maybe_uninit)]
 use core::mem::MaybeUninit;
 
-use raw;
+use crate::raw;
 
 #[cfg(feature = "no-panic")]
 use no_panic::no_panic;

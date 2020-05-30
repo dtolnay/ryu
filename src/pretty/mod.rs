@@ -5,10 +5,10 @@ use core::{mem, ptr};
 
 use self::exponent::*;
 use self::mantissa::*;
-use common;
-use d2s;
-use d2s::*;
-use f2s::*;
+use crate::common;
+use crate::d2s;
+use crate::d2s::*;
+use crate::f2s::*;
 
 #[cfg(feature = "no-panic")]
 use no_panic::no_panic;
