@@ -34,8 +34,8 @@ pub const DOUBLE_MANTISSA_BITS: u32 = 52;
 pub const DOUBLE_EXPONENT_BITS: u32 = 11;
 
 const DOUBLE_BIAS: i32 = 1023;
-const DOUBLE_POW5_INV_BITCOUNT: i32 = 122;
-const DOUBLE_POW5_BITCOUNT: i32 = 121;
+const DOUBLE_POW5_INV_BITCOUNT: i32 = 125;
+const DOUBLE_POW5_BITCOUNT: i32 = 125;
 
 #[cfg(integer128)]
 #[cfg_attr(feature = "no-panic", inline)]
