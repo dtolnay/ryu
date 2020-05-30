@@ -7,7 +7,6 @@ description = "Fast floating point to string conversion"
 repository = "https://github.com/dtolnay/ryu"
 documentation = "https://docs.rs/ryu"
 readme = "README.md"
-build = "build.rs"
 edition = "2018"
 
 [features]
