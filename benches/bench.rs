@@ -4,10 +4,14 @@
 
 extern crate test;
 
+use std::io::Write;
+use std::{f32, f64};
+use test::{black_box, Bencher};
+
 macro_rules! benches {
     ($($name:ident($value:expr),)*) => {
         mod bench_ryu {
-            use test::{Bencher, black_box};
+            use super::*;
             $(
                 #[bench]
                 fn $name(b: &mut Bencher) {
@@ -23,12 +27,10 @@ macro_rules! benches {
         }
 
         mod bench_std_fmt {
-            use test::{Bencher, black_box};
+            use super::*;
             $(
                 #[bench]
                 fn $name(b: &mut Bencher) {
-                    use std::io::Write;
-
                     let mut buf = Vec::with_capacity(20);
 
                     b.iter(|| {
@@ -47,9 +49,9 @@ benches!(
     bench_0_f64(0f64),
     bench_short_f64(0.1234f64),
     bench_e_f64(2.718281828459045f64),
-    bench_max_f64(::std::f64::MAX),
+    bench_max_f64(f64::MAX),
     bench_0_f32(0f32),
     bench_short_f32(0.1234f32),
     bench_e_f32(2.718281828459045f32),
-    bench_max_f32(::std::f32::MAX),
+    bench_max_f32(f32::MAX),
 );
