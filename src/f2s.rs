@@ -60,7 +60,7 @@ fn multiple_of_power_of_2_32(value: u32, p: u32) -> bool {
 // It seems to be slightly faster to avoid uint128_t here, although the
 // generated code for uint128_t looks slightly nicer.
 #[cfg_attr(feature = "no-panic", inline)]
-fn mul_shift(m: u32, factor: u64, shift: i32) -> u32 {
+fn mul_shift_32(m: u32, factor: u64, shift: i32) -> u32 {
     debug_assert!(shift > 32);
 
     // The casts here help MSVC to avoid calls to the __allmul library
@@ -86,14 +86,14 @@ fn mul_pow5_inv_div_pow2(m: u32, q: u32, j: i32) -> u32 {
         // the added 1 that's already stored in the table never overflows into
         // the upper 64 bits.
         let pow5 = unsafe { d2s::compute_inv_pow5(q) };
-        mul_shift(m, pow5.1 + 1, j)
+        mul_shift_32(m, pow5.1 + 1, j)
     }
 
     #[cfg(not(feature = "small"))]
     {
         debug_assert!(q < d2s::DOUBLE_POW5_INV_SPLIT.len() as u32);
         unsafe {
-            mul_shift(
+            mul_shift_32(
                 m,
                 d2s::DOUBLE_POW5_INV_SPLIT.get_unchecked(q as usize).1 + 1,
                 j,
@@ -107,13 +107,13 @@ fn mul_pow5_div_pow2(m: u32, i: u32, j: i32) -> u32 {
     #[cfg(feature = "small")]
     {
         let pow5 = unsafe { d2s::compute_pow5(i) };
-        mul_shift(m, pow5.1, j)
+        mul_shift_32(m, pow5.1, j)
     }
 
     #[cfg(not(feature = "small"))]
     {
         debug_assert!(i < d2s::DOUBLE_POW5_SPLIT.len() as u32);
-        unsafe { mul_shift(m, d2s::DOUBLE_POW5_SPLIT.get_unchecked(i as usize).1, j) }
+        unsafe { mul_shift_32(m, d2s::DOUBLE_POW5_SPLIT.get_unchecked(i as usize).1, j) }
     }
 }
 

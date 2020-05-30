@@ -18,14 +18,12 @@
 // is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 // KIND, either express or implied.
 
+#![allow(dead_code)]
+
 #[path = "../src/common.rs"]
 mod common;
 
 use common::*;
-
-fn ceil_log2_pow5(e: i32) -> i32 {
-    pow5bits(e)
-}
 
 #[test]
 fn test_decimal_length9() {
