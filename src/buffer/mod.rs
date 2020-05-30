@@ -1,10 +1,7 @@
-use core::{mem, slice, str};
-
+use crate::raw;
 #[cfg(maybe_uninit)]
 use core::mem::MaybeUninit;
-
-use crate::raw;
-
+use core::{mem, slice, str};
 #[cfg(feature = "no-panic")]
 use no_panic::no_panic;
 
