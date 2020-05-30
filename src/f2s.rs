@@ -53,7 +53,7 @@ fn multiple_of_power_of_5_32(value: u32, p: u32) -> bool {
 // Returns true if value is divisible by 2^p.
 #[cfg_attr(feature = "no-panic", inline)]
 fn multiple_of_power_of_2_32(value: u32, p: u32) -> bool {
-    // return __builtin_ctz(value) >= p;
+    // __builtin_ctz doesn't appear to be faster here.
     (value & ((1u32 << p) - 1)) == 0
 }
 
@@ -81,10 +81,10 @@ fn mul_pow5_inv_div_pow2(m: u32, q: u32, j: i32) -> u32 {
     #[cfg(feature = "small")]
     {
         // The inverse multipliers are defined as [2^x / 5^y] + 1; the upper 64
-        // bit from the double lookup table are the correct bits for [2^x /
+        // bits from the double lookup table are the correct bits for [2^x /
         // 5^y], so we have to add 1 here. Note that we rely on the fact that
         // the added 1 that's already stored in the table never overflows into
-        // the upper 64 bit.
+        // the upper 64 bits.
         let pow5 = unsafe { d2s::compute_inv_pow5(q) };
         mul_shift(m, pow5.1 + 1, j)
     }
