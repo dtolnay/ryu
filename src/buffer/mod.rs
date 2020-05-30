@@ -13,7 +13,7 @@ const NEG_INFINITY: &'static str = "-inf";
 ///
 /// ## Example
 ///
-/// ```edition2018
+/// ```
 /// let mut buffer = ryu::Buffer::new();
 /// let printed = buffer.format_finite(1.234);
 /// assert_eq!(printed, "1.234");
