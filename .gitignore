@@ -1,3 +1,4 @@
 /target
+/upstream
 **/*.rs.bk
 Cargo.lock
