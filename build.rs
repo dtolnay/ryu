@@ -14,12 +14,9 @@ fn main() {
     let target = env::var("TARGET").unwrap();
     let emscripten = target == "asmjs-unknown-emscripten" || target == "wasm32-unknown-emscripten";
 
-    // 128-bit integers stabilized in Rust 1.26:
-    // https://blog.rust-lang.org/2018/05/10/Rust-1.26.html
-    //
-    // Disabled on Emscripten targets as Emscripten doesn't
+    // 128-bit integers disabled on Emscripten targets as Emscripten doesn't
     // currently support integers larger than 64 bits.
-    if minor >= 26 && !emscripten {
+    if !emscripten {
         println!("cargo:rustc-cfg=integer128");
     }
 
