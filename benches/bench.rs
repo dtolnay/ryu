@@ -11,8 +11,6 @@ macro_rules! benches {
             $(
                 #[bench]
                 fn $name(b: &mut Bencher) {
-                    use ryu;
-
                     let mut buf = ryu::Buffer::new();
 
                     b.iter(move || {
