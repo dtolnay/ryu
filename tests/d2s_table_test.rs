@@ -20,8 +20,6 @@
 
 #![allow(dead_code)]
 
-extern crate core;
-
 #[path = "../src/common.rs"]
 mod common;
 

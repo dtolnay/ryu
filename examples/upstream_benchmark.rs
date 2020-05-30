@@ -1,8 +1,5 @@
 // cargo run --example upstream_benchmark --release
 
-extern crate rand;
-extern crate ryu;
-
 use rand::{Rng, SeedableRng};
 
 const SAMPLES: usize = 10000;

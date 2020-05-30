@@ -88,9 +88,6 @@
     allow(cast_lossless, many_single_char_names, unreadable_literal,)
 )]
 
-#[cfg(feature = "no-panic")]
-extern crate no_panic;
-
 mod buffer;
 mod common;
 mod d2s;

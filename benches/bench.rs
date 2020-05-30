@@ -2,7 +2,6 @@
 
 #![feature(test)]
 
-extern crate ryu;
 extern crate test;
 
 macro_rules! benches {
