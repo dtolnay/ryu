@@ -1,10 +1,7 @@
-use core::{mem, slice, str};
-
+use crate::raw;
 #[cfg(maybe_uninit)]
 use core::mem::MaybeUninit;
-
-use raw;
-
+use core::{mem, slice, str};
 #[cfg(feature = "no-panic")]
 use no_panic::no_panic;
 
@@ -16,7 +13,7 @@ const NEG_INFINITY: &'static str = "-inf";
 ///
 /// ## Example
 ///
-/// ```edition2018
+/// ```
 /// let mut buffer = ryu::Buffer::new();
 /// let printed = buffer.format_finite(1.234);
 /// assert_eq!(printed, "1.234");

@@ -3,7 +3,7 @@
 [![Build Status](https://img.shields.io/github/workflow/status/dtolnay/ryu/CI/master)](https://github.com/dtolnay/ryu/actions?query=branch%3Amaster)
 [![Latest Version](https://img.shields.io/crates/v/ryu.svg)](https://crates.io/crates/ryu)
 [![Rust Documentation](https://img.shields.io/badge/api-rustdoc-blue.svg)](https://docs.rs/ryu)
-[![Rustc Version 1.15+](https://img.shields.io/badge/rustc-1.15+-lightgray.svg)](https://blog.rust-lang.org/2017/02/02/Rust-1.15.html)
+[![Rustc Version 1.31+](https://img.shields.io/badge/rustc-1.31+-lightgray.svg)](https://blog.rust-lang.org/2018/12/06/Rust-1.31-and-rust-2018.html)
 
 Pure Rust implementation of Ryū, an algorithm to quickly convert floating point
 numbers to decimal strings.
@@ -15,7 +15,7 @@ under the creative commons CC-BY-SA license.
 This Rust implementation is a line-by-line port of Ulf Adams' implementation in
 C, [https://github.com/ulfjack/ryu][upstream].
 
-*Requirements: this crate supports any compiler version back to rustc 1.15; it
+*Requirements: this crate supports any compiler version back to rustc 1.31; it
 uses nothing from the Rust standard library so is usable from no_std crates.*
 
 [paper]: https://dl.acm.org/citation.cfm?id=3192369

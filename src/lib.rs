@@ -13,7 +13,7 @@
 //!
 //! # Example
 //!
-//! ```edition2018
+//! ```
 //! fn main() {
 //!     let mut buffer = ryu::Buffer::new();
 //!     let printed = buffer.format(1.234);
@@ -88,9 +88,6 @@
     allow(cast_lossless, many_single_char_names, unreadable_literal,)
 )]
 
-#[cfg(feature = "no-panic")]
-extern crate no_panic;
-
 mod buffer;
 mod common;
 mod d2s;
@@ -103,9 +100,9 @@ mod digit_table;
 mod f2s;
 mod pretty;
 
-pub use buffer::{Buffer, Float};
+pub use crate::buffer::{Buffer, Float};
 
 /// Unsafe functions that mirror the API of the C implementation of Ryū.
 pub mod raw {
-    pub use pretty::{format32, format64};
+    pub use crate::pretty::{format32, format64};
 }

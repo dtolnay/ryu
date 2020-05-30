@@ -1,15 +1,12 @@
 mod exponent;
 mod mantissa;
 
-use core::{mem, ptr};
-
 use self::exponent::*;
 use self::mantissa::*;
-use common;
-use d2s;
-use d2s::*;
-use f2s::*;
-
+use crate::common;
+use crate::d2s::{self, *};
+use crate::f2s::*;
+use core::{mem, ptr};
 #[cfg(feature = "no-panic")]
 use no_panic::no_panic;
 
@@ -37,7 +34,7 @@ use no_panic::no_panic;
 ///
 /// ## Example
 ///
-/// ```edition2018
+/// ```
 /// use std::{mem::MaybeUninit, slice, str};
 ///
 /// let f = 1.234f64;
@@ -144,7 +141,7 @@ pub unsafe fn format64(f: f64, result: *mut u8) -> usize {
 ///
 /// ## Example
 ///
-/// ```edition2018
+/// ```
 /// use std::{mem::MaybeUninit, slice, str};
 ///
 /// let f = 1.234f32;

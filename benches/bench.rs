@@ -2,7 +2,6 @@
 
 #![feature(test)]
 
-extern crate ryu;
 extern crate test;
 
 macro_rules! benches {
@@ -12,8 +11,6 @@ macro_rules! benches {
             $(
                 #[bench]
                 fn $name(b: &mut Bencher) {
-                    use ryu;
-
                     let mut buf = ryu::Buffer::new();
 
                     b.iter(move || {
