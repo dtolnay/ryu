@@ -18,8 +18,8 @@
 // is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 // KIND, either express or implied.
 
-// Returns the number of decimal digits in v, which must not be negative, and
-// must not contain more than 9 digits.
+// Returns the number of decimal digits in v, which must not contain more than 9
+// digits.
 #[cfg_attr(feature = "no-panic", inline)]
 pub fn decimal_length9(v: u32) -> u32 {
     // Function precondition: v is not a 10-digit number.
@@ -74,4 +74,67 @@ pub fn log10_pow5(e: i32) -> u32 {
     debug_assert!(e >= 0);
     debug_assert!(e <= 2620);
     (e as u32 * 732923) >> 20
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn ceil_log2_pow5(e: i32) -> i32 {
+        pow5bits(e)
+    }
+
+    #[test]
+    fn test_decimal_length9() {
+        assert_eq!(1, decimal_length9(0));
+        assert_eq!(1, decimal_length9(1));
+        assert_eq!(1, decimal_length9(9));
+        assert_eq!(2, decimal_length9(10));
+        assert_eq!(2, decimal_length9(99));
+        assert_eq!(3, decimal_length9(100));
+        assert_eq!(3, decimal_length9(999));
+        assert_eq!(9, decimal_length9(999999999));
+    }
+
+    #[test]
+    fn test_ceil_log2_pow5() {
+        assert_eq!(1, ceil_log2_pow5(0));
+        assert_eq!(3, ceil_log2_pow5(1));
+        assert_eq!(5, ceil_log2_pow5(2));
+        assert_eq!(7, ceil_log2_pow5(3));
+        assert_eq!(10, ceil_log2_pow5(4));
+        assert_eq!(8192, ceil_log2_pow5(3528));
+    }
+
+    #[test]
+    fn test_log10_pow2() {
+        assert_eq!(0, log10_pow2(0));
+        assert_eq!(0, log10_pow2(1));
+        assert_eq!(0, log10_pow2(2));
+        assert_eq!(0, log10_pow2(3));
+        assert_eq!(1, log10_pow2(4));
+        assert_eq!(496, log10_pow2(1650));
+    }
+
+    #[test]
+    fn test_log10_pow5() {
+        assert_eq!(0, log10_pow5(0));
+        assert_eq!(0, log10_pow5(1));
+        assert_eq!(1, log10_pow5(2));
+        assert_eq!(2, log10_pow5(3));
+        assert_eq!(2, log10_pow5(4));
+        assert_eq!(1831, log10_pow5(2620));
+    }
+
+    #[test]
+    fn test_float_to_bits() {
+        assert_eq!(0, 0.0_f32.to_bits());
+        assert_eq!(0x40490fda, 3.1415926_f32.to_bits());
+    }
+
+    #[test]
+    fn test_double_to_bits() {
+        assert_eq!(0, 0.0_f64.to_bits());
+        assert_eq!(0x400921FB54442D18, 3.1415926535897932384626433_f64.to_bits());
+    }
 }
