@@ -20,10 +20,10 @@
 
 use crate::common::*;
 #[cfg(not(feature = "small"))]
-use crate::d2s_full_table::*;
+pub use crate::d2s_full_table::*;
 use crate::d2s_intrinsics::*;
 #[cfg(feature = "small")]
-use crate::d2s_small_table::*;
+pub use crate::d2s_small_table::*;
 #[cfg(not(maybe_uninit))]
 use core::mem;
 #[cfg(maybe_uninit)]
@@ -32,10 +32,9 @@ use core::ptr;
 
 pub const DOUBLE_MANTISSA_BITS: u32 = 52;
 pub const DOUBLE_EXPONENT_BITS: u32 = 11;
-
-const DOUBLE_BIAS: i32 = 1023;
-const DOUBLE_POW5_INV_BITCOUNT: i32 = 125;
-const DOUBLE_POW5_BITCOUNT: i32 = 125;
+pub const DOUBLE_BIAS: i32 = 1023;
+pub const DOUBLE_POW5_INV_BITCOUNT: i32 = 125;
+pub const DOUBLE_POW5_BITCOUNT: i32 = 125;
 
 #[cfg(integer128)]
 #[cfg_attr(feature = "no-panic", inline)]
