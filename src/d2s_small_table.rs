@@ -96,7 +96,7 @@ pub static POW5_INV_OFFSETS: [u32; 20] = [
     0x41404051, 0x00001010, 0x00000014, 0x00000000,
 ];
 
-// Computes 5^i in the form required by Ryu.
+// Computes 5^i in the form required by Ryū.
 #[cfg(integer128)]
 #[cfg_attr(feature = "no-panic", inline)]
 pub unsafe fn compute_pow5(i: u32) -> (u64, u64) {
@@ -120,7 +120,7 @@ pub unsafe fn compute_pow5(i: u32) -> (u64, u64) {
     (shifted_sum as u64, (shifted_sum >> 64) as u64)
 }
 
-// Computes 5^-i in the form required by Ryu.
+// Computes 5^-i in the form required by Ryū.
 #[cfg(integer128)]
 #[cfg_attr(feature = "no-panic", inline)]
 pub unsafe fn compute_inv_pow5(i: u32) -> (u64, u64) {
@@ -144,7 +144,7 @@ pub unsafe fn compute_inv_pow5(i: u32) -> (u64, u64) {
     (shifted_sum as u64, (shifted_sum >> 64) as u64)
 }
 
-// Computes 5^i in the form required by Ryu, and stores it in the given pointer.
+// Computes 5^i in the form required by Ryū, and stores it in the given pointer.
 #[cfg(not(integer128))]
 #[cfg_attr(feature = "no-panic", inline)]
 pub unsafe fn compute_pow5(i: u32) -> (u64, u64) {
@@ -174,7 +174,7 @@ pub unsafe fn compute_pow5(i: u32) -> (u64, u64) {
     )
 }
 
-// Computes 5^-i in the form required by Ryu, and stores it in the given pointer.
+// Computes 5^-i in the form required by Ryū, and stores it in the given pointer.
 #[cfg(not(integer128))]
 #[cfg_attr(feature = "no-panic", inline)]
 pub unsafe fn compute_inv_pow5(i: u32) -> (u64, u64) {

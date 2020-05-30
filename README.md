@@ -69,7 +69,7 @@ standard library which you can run with:
 $ cargo bench
 ```
 
-The benchmark shows Ryu approximately 4-10x faster than the standard library
+The benchmark shows Ryū approximately 4-10x faster than the standard library
 across a range of f32 and f64 inputs. Measurements are in nanoseconds per
 iteration; smaller is better.
 
