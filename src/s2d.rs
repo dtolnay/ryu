@@ -124,8 +124,8 @@ pub fn s2d(buffer: &[u8]) -> Result<f64, Error> {
         // binary output exponent of
         //   log2(m10 * 10^e10) - (DOUBLE_MANTISSA_BITS + 1).
         //
-        // We use floor(log2(5^e10)) so that we get at least this many bits; better to
-        // have an additional bit than to not have enough bits.
+        // We use floor(log2(5^e10)) so that we get at least this many bits;
+        // better to have an additional bit than to not have enough bits.
         e2 = floor_log2(m10)
             .wrapping_add(e10 as u32)
             .wrapping_add(log2_pow5(e10) as u32)
@@ -182,27 +182,30 @@ pub fn s2d(buffer: &[u8]) -> Result<f64, Error> {
         return Ok(f64::from_bits(ieee));
     }
 
-    // We need to figure out how much we need to shift m2. The tricky part is that we need to take
-    // the final IEEE exponent into account, so we need to reverse the bias and also special-case
-    // the value 0.
+    // We need to figure out how much we need to shift m2. The tricky part is
+    // that we need to take the final IEEE exponent into account, so we need to
+    // reverse the bias and also special-case the value 0.
     let shift = if ieee_e2 == 0 { 1 } else { ieee_e2 as i32 }
         .wrapping_sub(e2)
         .wrapping_sub(DOUBLE_EXPONENT_BIAS as i32)
         .wrapping_sub(d2s::DOUBLE_MANTISSA_BITS as i32);
     debug_assert!(shift >= 0);
 
-    // We need to round up if the exact value is more than 0.5 above the value we computed. That's
-    // equivalent to checking if the last removed bit was 1 and either the value was not just
-    // trailing zeros or the result would otherwise be odd.
+    // We need to round up if the exact value is more than 0.5 above the value
+    // we computed. That's equivalent to checking if the last removed bit was 1
+    // and either the value was not just trailing zeros or the result would
+    // otherwise be odd.
     //
-    // We need to update trailing_zeros given that we have the exact output exponent ieee_e2 now.
+    // We need to update trailing_zeros given that we have the exact output
+    // exponent ieee_e2 now.
     trailing_zeros &= (m2 & ((1_u64 << (shift - 1)) - 1)) == 0;
     let last_removed_bit = (m2 >> (shift - 1)) & 1;
     let round_up = last_removed_bit != 0 && (!trailing_zeros || ((m2 >> shift) & 1) != 0);
 
     let mut ieee_m2 = (m2 >> shift).wrapping_add(round_up as u64);
     if ieee_m2 == (1_u64 << (d2s::DOUBLE_MANTISSA_BITS + 1)) {
-        // Due to how the IEEE represents +/-Infinity, we don't need to check for overflow here.
+        // Due to how the IEEE represents +/-Infinity, we don't need to check
+        // for overflow here.
         ieee_e2 += 1;
     }
     ieee_m2 &= (1_u64 << d2s::DOUBLE_MANTISSA_BITS) - 1;
