@@ -1,15 +1,9 @@
 use crate::common::*;
 use crate::d2s;
 use crate::d2s_intrinsics::*;
+use crate::parse::Error;
 
 const DOUBLE_EXPONENT_BIAS: usize = 1023;
-
-#[derive(Copy, Clone, Debug)]
-pub enum Error {
-    InputTooShort,
-    InputTooLong,
-    MalformedInput,
-}
 
 fn floor_log2(value: u64) -> u32 {
     63_u32.wrapping_sub(value.leading_zeros())

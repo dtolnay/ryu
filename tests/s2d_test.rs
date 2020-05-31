@@ -39,7 +39,11 @@ mod d2s;
 #[path = "../src/s2d.rs"]
 mod s2d;
 
-use s2d::{s2d, Error};
+#[path = "../src/parse.rs"]
+mod parse;
+
+use crate::parse::Error;
+use crate::s2d::s2d;
 
 impl PartialEq for Error {
     fn eq(&self, other: &Self) -> bool {
