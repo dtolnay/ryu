@@ -107,8 +107,7 @@ pub fn s2d(buffer: &[u8]) -> Result<f64, Error> {
         return Ok(f64::from_bits(ieee));
     }
     if m10digits + e10 >= 310 {
-        // Number is larger than 1e+309, which should be rounded down to 0;
-        // return +/-Infinity.
+        // Number is larger than 1e+309, which should be rounded to +/-Infinity.
         let ieee = ((signed_m as u64) << (d2s::DOUBLE_EXPONENT_BITS + d2s::DOUBLE_MANTISSA_BITS))
             | (0x7ff_u64 << d2s::DOUBLE_MANTISSA_BITS);
         return Ok(f64::from_bits(ieee));
