@@ -2,6 +2,8 @@ use crate::common::*;
 use crate::d2s;
 use crate::d2s_intrinsics::*;
 use crate::parse::Error;
+#[cfg(feature = "no-panic")]
+use no_panic::no_panic;
 
 const DOUBLE_EXPONENT_BIAS: usize = 1023;
 
@@ -9,6 +11,7 @@ fn floor_log2(value: u64) -> u32 {
     63_u32.wrapping_sub(value.leading_zeros())
 }
 
+#[cfg_attr(feature = "no-panic", no_panic)]
 pub fn s2d(buffer: &[u8]) -> Result<f64, Error> {
     let len = buffer.len();
     if len == 0 {
