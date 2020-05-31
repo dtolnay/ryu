@@ -24,6 +24,7 @@ use crate::f2s_intrinsics::*;
 pub const FLOAT_MANTISSA_BITS: u32 = 23;
 pub const FLOAT_EXPONENT_BITS: u32 = 8;
 const FLOAT_BIAS: i32 = 127;
+pub use crate::f2s_intrinsics::{FLOAT_POW5_BITCOUNT, FLOAT_POW5_INV_BITCOUNT};
 
 // A floating decimal representing m * 10^e.
 pub struct FloatingDecimal32 {
