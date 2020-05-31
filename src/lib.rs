@@ -106,6 +106,7 @@ mod d2s_intrinsics;
 mod d2s_small_table;
 mod digit_table;
 mod f2s;
+mod f2s_intrinsics;
 mod pretty;
 
 pub use crate::buffer::{Buffer, Float};
