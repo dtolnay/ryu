@@ -118,3 +118,11 @@ fn test_overflow() {
 fn test_table_size_denormal() {
     assert_eq!(5e-324, s2d(b"4.9406564584124654e-324").unwrap());
 }
+
+#[test]
+fn test_issue157() {
+    assert_eq!(
+        1.2999999999999999E+154,
+        s2d(b"1.2999999999999999E+154").unwrap(),
+    );
+}

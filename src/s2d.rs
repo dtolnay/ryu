@@ -154,7 +154,7 @@ pub fn s2d(buffer: &[u8]) -> Result<f64, Error> {
         // requires that the largest power of 2 that divides m10 + e10 is
         // greater than e2. If e2 is less than e10, then the result must be
         // exact. Otherwise we use the existing multiple_of_power_of_2 function.
-        trailing_zeros = e2 < e10 || multiple_of_power_of_2(m10, (e2 - e10) as u32);
+        trailing_zeros = e2 < e10 || e2 - e10 < 64 && multiple_of_power_of_2(m10, (e2 - e10) as u32);
     } else {
         e2 = floor_log2(m10)
             .wrapping_add(e10 as u32)
