@@ -75,3 +75,10 @@ fn test_mantissa_rounding_overflow() {
     assert_eq!(1.0, s2f(b"0.999999999").unwrap());
     assert_eq!(f32::INFINITY, s2f(b"3.4028236e+38").unwrap());
 }
+
+#[test]
+fn test_trailing_zeros() {
+    assert_eq!(26843550.0, s2f(b"26843549.5").unwrap());
+    assert_eq!(50000004.0, s2f(b"50000002.5").unwrap());
+    assert_eq!(99999992.0, s2f(b"99999989.5").unwrap());
+}
