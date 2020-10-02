@@ -77,6 +77,7 @@ fn test_basic() {
     assert_eq!(1.0, s2d(b"1e0").unwrap());
     assert_eq!(1.0, s2d(b"1E0").unwrap());
     assert_eq!(1.0, s2d(b"000001.000000").unwrap());
+    assert_eq!(0.2316419, s2d(b"0.2316419").unwrap());
 }
 
 #[test]
