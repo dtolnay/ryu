@@ -43,7 +43,7 @@ You can run upstream's benchmarks with:
 ```console
 $ git clone https://github.com/ulfjack/ryu c-ryu
 $ cd c-ryu
-$ bazel run -c opt //ryu/benchmark
+$ bazel run -c opt //ryu/benchmark:ryu_benchmark
 ```
 
 And the same benchmark against our implementation with:
