@@ -74,6 +74,12 @@ fn test_min_max() {
 fn test_mantissa_rounding_overflow() {
     assert_eq!(1.0, s2f(b"0.999999999").unwrap());
     assert_eq!(f32::INFINITY, s2f(b"3.4028236e+38").unwrap());
+    assert_eq!(1.1754944e-38, s2f(b"1.17549430e-38").unwrap()); // FLT_MIN
+    assert_eq!(1.1754944e-38, s2f(b"1.17549431e-38").unwrap());
+    assert_eq!(1.1754944e-38, s2f(b"1.17549432e-38").unwrap());
+    assert_eq!(1.1754944e-38, s2f(b"1.17549433e-38").unwrap());
+    assert_eq!(1.1754944e-38, s2f(b"1.17549434e-38").unwrap());
+    assert_eq!(1.1754944e-38, s2f(b"1.17549435e-38").unwrap());
 }
 
 #[test]

@@ -210,12 +210,16 @@ pub fn s2f(buffer: &[u8]) -> Result<f32, Error> {
     let round_up = last_removed_bit != 0 && (!trailing_zeros || ((m2 >> shift) & 1) != 0);
 
     let mut ieee_m2 = (m2 >> shift).wrapping_add(round_up as u32);
-    if ieee_m2 == (1_u32 << (f2s::FLOAT_MANTISSA_BITS + 1)) {
+    debug_assert!(ieee_m2 <= 1_u32 << (f2s::FLOAT_MANTISSA_BITS + 1));
+    ieee_m2 &= (1_u32 << f2s::FLOAT_MANTISSA_BITS) - 1;
+    if ieee_m2 == 0 && round_up {
+        // Rounding up may overflow the mantissa.
+        // In this case we move a trailing zero of the mantissa into the
+        // exponent.
         // Due to how the IEEE represents +/-Infinity, we don't need to check
         // for overflow here.
         ieee_e2 += 1;
     }
-    ieee_m2 &= (1_u32 << f2s::FLOAT_MANTISSA_BITS) - 1;
     let ieee = ((((signed_m as u32) << f2s::FLOAT_EXPONENT_BITS) | ieee_e2 as u32)
         << f2s::FLOAT_MANTISSA_BITS)
         | ieee_m2;
