@@ -40,7 +40,7 @@ impl Buffer {
         #[cfg(not(maybe_uninit))]
         let bytes = unsafe { mem::uninitialized() };
 
-        Buffer { bytes: bytes }
+        Buffer { bytes }
     }
 
     /// Print a floating point number into this buffer and return a reference to
