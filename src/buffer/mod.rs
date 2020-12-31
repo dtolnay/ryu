@@ -7,9 +7,9 @@ use core::{slice, str};
 #[cfg(feature = "no-panic")]
 use no_panic::no_panic;
 
-const NAN: &'static str = "NaN";
-const INFINITY: &'static str = "inf";
-const NEG_INFINITY: &'static str = "-inf";
+const NAN: &str = "NaN";
+const INFINITY: &str = "inf";
+const NEG_INFINITY: &str = "-inf";
 
 /// Safe API for formatting floating point numbers to text.
 ///
