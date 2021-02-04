@@ -100,6 +100,7 @@
     clippy::expl_impl_clone_on_copy,
     clippy::if_not_else,
     clippy::many_single_char_names,
+    clippy::missing_panics_doc,
     clippy::module_name_repetitions,
     clippy::must_use_candidate,
     clippy::similar_names,
