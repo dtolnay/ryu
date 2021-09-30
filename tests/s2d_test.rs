@@ -20,6 +20,19 @@
 
 #![cfg(not(feature = "small"))]
 #![allow(dead_code)]
+#![allow(
+    clippy::cast_lossless,
+    clippy::cast_possible_truncation,
+    clippy::cast_possible_wrap,
+    clippy::cast_sign_loss,
+    clippy::excessive_precision,
+    clippy::float_cmp,
+    clippy::similar_names,
+    clippy::too_many_lines,
+    clippy::unreadable_literal,
+    clippy::unseparated_literal_suffix,
+    clippy::wildcard_imports
+)]
 
 #[path = "../src/common.rs"]
 mod common;
