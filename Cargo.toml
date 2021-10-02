@@ -8,6 +8,7 @@ repository = "https://github.com/dtolnay/ryu"
 documentation = "https://docs.rs/ryu"
 readme = "README.md"
 edition = "2018"
+rust-version = "1.31"
 
 [features]
 # Use smaller lookup tables. Instead of storing every required power of
