@@ -42,7 +42,7 @@ jobs:
           components: miri
       - run: cargo miri test
         env:
-          MIRIFLAGS: "-Zmiri-track-raw-pointers"
+          MIRIFLAGS: "-Zmiri-tag-raw-pointers"
 
   clippy:
     name: Clippy
