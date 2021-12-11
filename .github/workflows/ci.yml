@@ -19,6 +19,7 @@ jobs:
         with:
           toolchain: ${{matrix.rust}}
       - run: cargo test
+      - run: cargo test --features small
       - run: cargo build --tests --features no-panic --release
         if: matrix.rust == 'nightly'
 

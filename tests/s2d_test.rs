@@ -37,11 +37,16 @@
 #[path = "../src/common.rs"]
 mod common;
 
+#[cfg(not(feature = "small"))]
 #[path = "../src/d2s_full_table.rs"]
 mod d2s_full_table;
 
 #[path = "../src/d2s_intrinsics.rs"]
 mod d2s_intrinsics;
+
+#[cfg(feature = "small")]
+#[path = "../src/d2s_small_table.rs"]
+mod d2s_small_table;
 
 #[path = "../src/d2s.rs"]
 mod d2s;
