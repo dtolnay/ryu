@@ -8,17 +8,13 @@ edition = "2018"
 cargo-fuzz = true
 
 [dependencies]
-libfuzzer-sys = { version="0.4", features=["arbitrary-derive"] }
-
-[dependencies.ryu]
-path = ".."
-
-# Prevent this from interfering with workspaces
-[workspace]
-members = ["."]
+libfuzzer-sys = { version = "0.4", features = ["arbitrary-derive"] }
+ryu = { path = ".." }
 
 [[bin]]
 name = "fuzz_ryu"
 path = "fuzz_targets/fuzz_ryu.rs"
 test = false
 doc = false
+
+[workspace]
