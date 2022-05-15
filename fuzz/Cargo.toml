@@ -1,5 +1,5 @@
 [package]
-name = "itoa-fuzz"
+name = "ryu-fuzz"
 version = "0.0.0"
 publish = false
 edition = "2018"
