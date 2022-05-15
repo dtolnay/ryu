@@ -3,13 +3,13 @@
 use arbitrary::Arbitrary;
 use libfuzzer_sys::fuzz_target;
 
-#[derive(Arbitrary, Debug, Clone)]
+#[derive(Arbitrary, Debug)]
 enum FloatInput {
     F32(f32),
     F64(f64),
 }
 
-#[derive(Arbitrary, Debug, Clone)]
+#[derive(Arbitrary, Debug)]
 struct Inputs {
     inputs: Vec<(FloatInput, bool)>,
 }
