@@ -9,19 +9,13 @@ enum FloatInput {
     F64(f64),
 }
 
-#[derive(Arbitrary, Debug)]
-struct Inputs {
-    inputs: Vec<(FloatInput, bool)>,
-}
-
-fuzz_target!(|input: Inputs| {
+fuzz_target!(|inputs: (FloatInput, bool)| {
+    let (input, finite) = inputs;
     let mut buffer = ryu::Buffer::new();
-    for input_step in input.inputs {
-        match input_step {
-            (FloatInput::F32(val), false) => buffer.format(val),
-            (FloatInput::F32(val), true) => buffer.format_finite(val),
-            (FloatInput::F64(val), false) => buffer.format(val),
-            (FloatInput::F64(val), true) => buffer.format_finite(val),
-        };
-    }
+    match (input, finite) {
+        (FloatInput::F32(val), false) => buffer.format(val),
+        (FloatInput::F32(val), true) => buffer.format_finite(val),
+        (FloatInput::F64(val), false) => buffer.format(val),
+        (FloatInput::F64(val), true) => buffer.format_finite(val),
+    };
 });
