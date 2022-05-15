@@ -1,6 +1,6 @@
 [package]
 name = "ryu"
-version = "1.0.9" # don't forget to update html_root_url
+version = "1.0.10" # don't forget to update html_root_url
 authors = ["David Tolnay <dtolnay@gmail.com>"]
 license = "Apache-2.0 OR BSL-1.0"
 description = "Fast floating point to string conversion"
