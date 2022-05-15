@@ -1,14 +1,15 @@
 #![no_main]
-use libfuzzer_sys::arbitrary;
+
+use arbitrary::Arbitrary;
 use libfuzzer_sys::fuzz_target;
 
-#[derive(arbitrary::Arbitrary, Debug, Clone)]
+#[derive(Arbitrary, Debug, Clone)]
 enum FloatInput {
     F32(f32),
     F64(f64),
 }
 
-#[derive(arbitrary::Arbitrary, Debug, Clone)]
+#[derive(Arbitrary, Debug, Clone)]
 struct Inputs {
     inputs: Vec<(FloatInput, bool)>,
 }

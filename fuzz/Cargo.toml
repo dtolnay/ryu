@@ -8,7 +8,8 @@ edition = "2018"
 cargo-fuzz = true
 
 [dependencies]
-libfuzzer-sys = { version = "0.4", features = ["arbitrary-derive"] }
+arbitrary = { version = "1", features = ["derive"] }
+libfuzzer-sys = "0.4"
 ryu = { path = ".." }
 
 [[bin]]
