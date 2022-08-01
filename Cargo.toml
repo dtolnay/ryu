@@ -2,7 +2,7 @@
 name = "ryu"
 version = "1.0.10" # don't forget to update html_root_url
 authors = ["David Tolnay <dtolnay@gmail.com>"]
-categories = ["value-formatting"]
+categories = ["value-formatting", "no-std"]
 description = "Fast floating point to string conversion"
 documentation = "https://docs.rs/ryu"
 edition = "2018"
