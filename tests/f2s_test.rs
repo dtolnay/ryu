@@ -75,7 +75,8 @@ fn test_basic() {
     check!(-0.0);
     check!(1.0);
     check!(-1.0);
-    assert_eq!(pretty(f32::NAN), "NaN");
+    assert_eq!(pretty(f32::NAN.copysign(1.0)), "NaN");
+    assert_eq!(pretty(f32::NAN.copysign(-1.0)), "NaN");
     assert_eq!(pretty(f32::INFINITY), "inf");
     assert_eq!(pretty(f32::NEG_INFINITY), "-inf");
 }
