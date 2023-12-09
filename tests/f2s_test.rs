@@ -152,6 +152,9 @@ fn test_regression() {
     check!(1.00014165e-36);
     check!(200.0);
     check!(33554432.0);
+    check!(-4.6729244e16);
+    check!(-48808750.0);
+    check!(-26632274.0);
 }
 
 #[test]
