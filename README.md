@@ -19,7 +19,7 @@ C, [https://github.com/ulfjack/ryu][upstream].
 uses nothing from the Rust standard library so is usable from no_std crates.*
 
 [paper]: https://dl.acm.org/citation.cfm?id=3192369
-[upstream]: https://github.com/ulfjack/ryu/tree/abf76d252bc97300354857e64e80d4a2bf664291
+[upstream]: https://github.com/ulfjack/ryu/tree/77e767f5e056bab96e895072fc21618ecff2f44b
 
 ```toml
 [dependencies]
