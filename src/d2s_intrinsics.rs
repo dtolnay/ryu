@@ -36,7 +36,7 @@ pub fn div100(x: u64) -> u64 {
 }
 
 #[cfg_attr(feature = "no-panic", inline)]
-fn pow5_factor(mut value: u64) -> u32 {
+pub(crate) fn pow5_factor(mut value: u64) -> u32 {
     let mut count = 0u32;
     loop {
         debug_assert!(value != 0);
