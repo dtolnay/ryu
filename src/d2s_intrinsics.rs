@@ -36,16 +36,16 @@ pub fn div100(x: u64) -> u64 {
 }
 
 #[cfg_attr(feature = "no-panic", inline)]
-fn pow5_factor(mut value: u64) -> u32 {
+pub(crate) fn pow5_factor(mut value: u64) -> u32 {
+    const M_INV_5: u64 = 14757395258967641293; // 5 * m_inv_5 = 1 (mod 2^64)
+    const N_DIV_5: u64 = 3689348814741910323; // #{ n | n = 0 (mod 2^64) } = 2^64 / 5
     let mut count = 0u32;
     loop {
         debug_assert!(value != 0);
-        let q = div5(value);
-        let r = (value as u32).wrapping_sub(5u32.wrapping_mul(q as u32));
-        if r != 0 {
+        value = value.wrapping_mul(M_INV_5);
+        if value > N_DIV_5 {
             break;
         }
-        value = q;
         count += 1;
     }
     count
