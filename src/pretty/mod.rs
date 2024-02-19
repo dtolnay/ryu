@@ -1,11 +1,11 @@
 mod exponent;
 mod mantissa;
 
-use self::exponent::*;
-use self::mantissa::*;
+use self::exponent::{write_exponent2, write_exponent3};
+use self::mantissa::{write_mantissa, write_mantissa_long};
 use crate::common;
-use crate::d2s::{self, *};
-use crate::f2s::*;
+use crate::d2s::{self, d2d, DOUBLE_EXPONENT_BITS, DOUBLE_MANTISSA_BITS};
+use crate::f2s::{f2d, FLOAT_EXPONENT_BITS, FLOAT_MANTISSA_BITS};
 use core::ptr;
 #[cfg(feature = "no-panic")]
 use no_panic::no_panic;

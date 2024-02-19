@@ -18,8 +18,10 @@
 // is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 // KIND, either express or implied.
 
-use crate::common::*;
-use crate::f2s_intrinsics::*;
+use crate::common::{log10_pow2, log10_pow5, pow5bits};
+use crate::f2s_intrinsics::{
+    mul_pow5_div_pow2, mul_pow5_inv_div_pow2, multiple_of_power_of_2_32, multiple_of_power_of_5_32,
+};
 
 pub const FLOAT_MANTISSA_BITS: u32 = 23;
 pub const FLOAT_EXPONENT_BITS: u32 = 8;

@@ -41,8 +41,8 @@ mod d2s_intrinsics;
 #[path = "../src/d2s_small_table.rs"]
 mod d2s_small_table;
 
-use d2s_full_table::*;
-use d2s_small_table::*;
+use d2s_full_table::{DOUBLE_POW5_INV_SPLIT, DOUBLE_POW5_SPLIT};
+use d2s_small_table::{compute_inv_pow5, compute_pow5};
 
 #[test]
 fn test_compute_pow5() {

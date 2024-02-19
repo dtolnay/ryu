@@ -1,4 +1,4 @@
-use crate::digit_table::*;
+use crate::digit_table::DIGIT_TABLE;
 use core::ptr;
 
 #[cfg_attr(feature = "no-panic", inline)]

@@ -1,6 +1,6 @@
-use crate::common::*;
+use crate::common::{ceil_log2_pow5, log2_pow5};
 use crate::d2s;
-use crate::d2s_intrinsics::*;
+use crate::d2s_intrinsics::{mul_shift_64, multiple_of_power_of_2, multiple_of_power_of_5};
 use crate::parse::Error;
 #[cfg(feature = "no-panic")]
 use no_panic::no_panic;

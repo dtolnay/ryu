@@ -18,7 +18,7 @@
 // is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 // KIND, either express or implied.
 
-use crate::common::*;
+use crate::common::pow5bits;
 
 pub static DOUBLE_POW5_INV_SPLIT2: [(u64, u64); 15] = [
     (1, 2305843009213693952),
