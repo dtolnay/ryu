@@ -1,3 +1,4 @@
+#![cfg_attr(not(check_cfg), allow(unexpected_cfgs))]
 #![cfg(exhaustive)]
 
 use std::str;
