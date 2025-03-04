@@ -1,6 +1,6 @@
 [package]
 name = "ryu"
-version = "1.0.19"
+version = "1.0.20"
 authors = ["David Tolnay <dtolnay@gmail.com>"]
 categories = ["value-formatting", "no-std", "no-std::no-alloc"]
 description = "Fast floating point to string conversion"
