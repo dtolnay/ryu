@@ -57,7 +57,7 @@ pub fn s2f(buffer: &[u8]) -> Result<f32, Error> {
         i += 1;
     }
 
-    if let Some(b'e') | Some(b'E') = buffer.get(i) {
+    if let Some(b'e' | b'E') = buffer.get(i) {
         e_index = i;
         i += 1;
         match buffer.get(i) {
@@ -116,8 +116,7 @@ pub fn s2f(buffer: &[u8]) -> Result<f32, Error> {
     // whether the conversion was exact (trailing_zeros).
     let e2: i32;
     let m2: u32;
-    let mut trailing_zeros: bool;
-    if e10 >= 0 {
+    let mut trailing_zeros = if e10 >= 0 {
         // The length of m * 10^e in bits is:
         //   log2(m10 * 10^e10) = log2(m10) + e10 log2(10) = log2(m10) + e10 + e10 * log2(5)
         //
@@ -148,8 +147,7 @@ pub fn s2f(buffer: &[u8]) -> Result<f32, Error> {
         // requires that the largest power of 2 that divides m10 + e10 is
         // greater than e2. If e2 is less than e10, then the result must be
         // exact. Otherwise we use the existing multiple_of_power_of_2 function.
-        trailing_zeros =
-            e2 < e10 || e2 - e10 < 32 && multiple_of_power_of_2_32(m10, (e2 - e10) as u32);
+        e2 < e10 || e2 - e10 < 32 && multiple_of_power_of_2_32(m10, (e2 - e10) as u32)
     } else {
         e2 = floor_log2(m10)
             .wrapping_add(e10 as u32)
@@ -175,10 +173,9 @@ pub fn s2f(buffer: &[u8]) -> Result<f32, Error> {
         // 5^(-e10)] above, and we need to check whether 5^(-e10) divides (m10 *
         // 2^(e10-e2)), which is the case iff pow5(m10 * 2^(e10-e2)) = pow5(m10)
         // >= -e10.
-        trailing_zeros = (e2 < e10
-            || (e2 - e10 < 32 && multiple_of_power_of_2_32(m10, (e2 - e10) as u32)))
-            && multiple_of_power_of_5_32(m10, -e10 as u32);
-    }
+        (e2 < e10 || (e2 - e10 < 32 && multiple_of_power_of_2_32(m10, (e2 - e10) as u32)))
+            && multiple_of_power_of_5_32(m10, -e10 as u32)
+    };
 
     // Compute the final IEEE exponent.
     let mut ieee_e2 = i32::max(0, e2 + FLOAT_EXPONENT_BIAS as i32 + floor_log2(m2) as i32) as u32;

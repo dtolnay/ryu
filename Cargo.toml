@@ -1,16 +1,16 @@
 [package]
-name = "ryu"
-version = "1.0.20"
-authors = ["David Tolnay <dtolnay@gmail.com>"]
+name = "ryu-js"
+version = "1.0.2"
+authors = ["David Tolnay <dtolnay@gmail.com>", "boa-dev"]
 categories = ["value-formatting", "no-std", "no-std::no-alloc"]
-description = "Fast floating point to string conversion"
-documentation = "https://docs.rs/ryu"
+description = "Fast floating point to string conversion, ECMAScript compliant."
+documentation = "https://docs.rs/ryu-js"
 edition = "2018"
 exclude = ["build.rs", "performance.png", "chart/**"]
 keywords = ["float"]
 license = "Apache-2.0 OR BSL-1.0"
-repository = "https://github.com/dtolnay/ryu"
-rust-version = "1.36"
+repository = "https://github.com/boa-dev/ryu-js"
+rust-version = "1.64"
 
 [features]
 # Use smaller lookup tables. Instead of storing every required power of
@@ -26,13 +26,17 @@ no-panic = { version = "0.1", optional = true }
 num_cpus = "1.8"
 rand = "0.9"
 rand_xorshift = "0.4"
+criterion = "0.5"
+
+[lib]
+bench = false
 
 [package.metadata.docs.rs]
 targets = ["x86_64-unknown-linux-gnu"]
-rustdoc-args = [
-    "--generate-link-to-definition",
-    "--generate-macro-expansion",
-    "--extern-html-root-url=core=https://doc.rust-lang.org",
-    "--extern-html-root-url=alloc=https://doc.rust-lang.org",
-    "--extern-html-root-url=std=https://doc.rust-lang.org",
-]
+
+# See: https://github.com/rust-lang/rust/pull/84176
+rustdoc-args = ["--generate-link-to-definition"]
+
+[[bench]]
+name = "bench"
+harness = false

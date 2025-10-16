@@ -1,9 +1,10 @@
-# Ryū
+# Ryū-js
 
-[<img alt="github" src="https://img.shields.io/badge/github-dtolnay/ryu-8da0cb?style=for-the-badge&labelColor=555555&logo=github" height="20">](https://github.com/dtolnay/ryu)
-[<img alt="crates.io" src="https://img.shields.io/crates/v/ryu.svg?style=for-the-badge&color=fc8d62&logo=rust" height="20">](https://crates.io/crates/ryu)
-[<img alt="docs.rs" src="https://img.shields.io/badge/docs.rs-ryu-66c2a5?style=for-the-badge&labelColor=555555&logo=docs.rs" height="20">](https://docs.rs/ryu)
-[<img alt="build status" src="https://img.shields.io/github/actions/workflow/status/dtolnay/ryu/ci.yml?branch=master&style=for-the-badge" height="20">](https://github.com/dtolnay/ryu/actions?query=branch%3Amaster)
+Ryū-js is a fork of the [ryu][ryu-crate] crate adjusted to comply to the ECMAScript [number-to-string][number-to-string] algorithm, also implementing [`Number.prototype.toFixed()`][number-to-fixed] compliant conversion.
+
+[ryu-crate]: https://crates.io/crates/ryu
+[number-to-string]: https://tc39.es/ecma262/#sec-numeric-types-number-tostring
+[number-to-fixed]: https://tc39.es/ecma262/#sec-number.prototype.tofixed
 
 Pure Rust implementation of Ryū, an algorithm to quickly convert floating point
 numbers to decimal strings.
@@ -15,15 +16,15 @@ under the creative commons CC-BY-SA license.
 This Rust implementation is a line-by-line port of Ulf Adams' implementation in
 C, [https://github.com/ulfjack/ryu][upstream].
 
-*Requirements: this crate supports any compiler version back to rustc 1.36; it
+*Requirements: This crate supports any compiler version back to rustc 1.64; it
 uses nothing from the Rust standard library so is usable from no_std crates.*
 
 [paper]: https://dl.acm.org/citation.cfm?id=3192369
-[upstream]: https://github.com/ulfjack/ryu/tree/77e767f5e056bab96e895072fc21618ecff2f44b
+[upstream]: https://github.com/ulfjack/ryu/tree/abf76d252bc97300354857e64e80d4a2bf664291
 
 ```toml
 [dependencies]
-ryu = "1.0"
+ryu-js = "1.0"
 ```
 
 <br>
@@ -32,17 +33,21 @@ ryu = "1.0"
 
 ```rust
 fn main() {
-    let mut buffer = ryu::Buffer::new();
+    let mut buffer = ryu_js::Buffer::new();
     let printed = buffer.format(1.234);
     assert_eq!(printed, "1.234");
 }
 ```
 
-<br>
+## Performance 
+
+<!--
 
 ## Performance (lower is better)
 
-![performance](https://raw.githubusercontent.com/dtolnay/ryu/master/performance.png)
+![performance](https://raw.githubusercontent.com/boa-dev/ryu-js/master/performance.png)
+
+-->
 
 You can run upstream's benchmarks with:
 
@@ -55,12 +60,12 @@ $ bazel run -c opt //ryu/benchmark:ryu_benchmark
 And the same benchmark against our implementation with:
 
 ```console
-$ git clone https://github.com/dtolnay/ryu rust-ryu
+$ git clone https://github.com/boa-dev/ryu-js rust-ryu
 $ cd rust-ryu
 $ cargo run --example upstream_benchmark --release
 ```
 
-These benchmarks measure the average time to print a 32-bit float and average
+The benchmarks measure the average time to print a 32-bit float and average
 time to print a 64-bit float, where the inputs are distributed as uniform random
 bit patterns 32 and 64 bits wide.
 

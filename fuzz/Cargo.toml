@@ -1,7 +1,7 @@
 [package]
 name = "ryu-fuzz"
 version = "0.0.0"
-authors = ["David Tolnay <dtolnay@gmail.com>"]
+authors = ["David Tolnay <dtolnay@gmail.com>", "boa-dev"]
 edition = "2018"
 publish = false
 
@@ -11,14 +11,14 @@ cargo-fuzz = true
 [dependencies]
 arbitrary = { version = "1", features = ["derive"] }
 libfuzzer-sys = "0.4"
-ryu = { path = ".." }
+ryu-js = { path = ".." }
 
 [features]
-small = ["ryu/small"]
+small = ["ryu-js/small"]
 
 [[bin]]
-name = "fuzz_ryu"
-path = "fuzz_targets/fuzz_ryu.rs"
+name = "fuzz_ryu_js"
+path = "fuzz_targets/fuzz_ryu_js.rs"
 test = false
 doc = false
 

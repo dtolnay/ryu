@@ -53,7 +53,7 @@ macro_rules! benchmark {
 
                 let t1 = std::time::SystemTime::now();
                 for _ in 0..ITERATIONS {
-                    throwaway += ryu::Buffer::new().format_finite(f).len();
+                    throwaway += ryu_js::Buffer::new().format_finite(f).len();
                 }
                 let duration = t1.elapsed().unwrap();
                 let nanos = duration.as_secs() * 1_000_000_000 + duration.subsec_nanos() as u64;

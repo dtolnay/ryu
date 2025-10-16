@@ -10,13 +10,13 @@ enum FloatInput {
     F64(f64),
 }
 
-macro_rules! ryu_test {
+macro_rules! ryu_js_test {
     ($val:expr, $method:ident) => {
         match $val {
             val => {
-                let mut buffer = ryu::Buffer::new();
+                let mut buffer = ryu_js::Buffer::new();
                 let string = buffer.$method(val);
-                assert!(string.len() <= mem::size_of::<ryu::Buffer>());
+                assert!(string.len() <= mem::size_of::<ryu_js::Buffer>());
                 if val.is_finite() {
                     assert_eq!(val, string.parse().unwrap());
                 }
@@ -28,9 +28,9 @@ macro_rules! ryu_test {
 fuzz_target!(|inputs: (FloatInput, bool)| {
     let (input, finite) = inputs;
     match (input, finite) {
-        (FloatInput::F32(val), false) => ryu_test!(val, format),
-        (FloatInput::F32(val), true) => ryu_test!(val, format_finite),
-        (FloatInput::F64(val), false) => ryu_test!(val, format),
-        (FloatInput::F64(val), true) => ryu_test!(val, format_finite),
+        (FloatInput::F32(val), false) => ryu_js_test!(val, format),
+        (FloatInput::F32(val), true) => ryu_js_test!(val, format_finite),
+        (FloatInput::F64(val), false) => ryu_js_test!(val, format),
+        (FloatInput::F64(val), true) => ryu_js_test!(val, format_finite),
     }
 });

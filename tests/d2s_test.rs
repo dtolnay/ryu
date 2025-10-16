@@ -20,6 +20,7 @@
 
 #![allow(
     clippy::approx_constant,
+    clippy::excessive_precision,
     clippy::cast_lossless,
     clippy::float_cmp,
     clippy::int_plus_one,
@@ -34,9 +35,10 @@ mod macros;
 use std::f64;
 
 fn pretty(f: f64) -> String {
-    ryu::Buffer::new().format(f).to_owned()
+    ryu_js::Buffer::new().format(f).to_owned()
 }
 
+#[allow(clippy::int_plus_one)]
 fn ieee_parts_to_double(sign: bool, ieee_exponent: u32, ieee_mantissa: u64) -> f64 {
     assert!(ieee_exponent <= 2047);
     assert!(ieee_mantissa <= (1u64 << 53) - 1);
@@ -46,20 +48,20 @@ fn ieee_parts_to_double(sign: bool, ieee_exponent: u32, ieee_mantissa: u64) -> f
 #[test]
 fn test_ryu() {
     check!(0.3);
-    check!(1234000000000000.0);
-    check!(1.234e16);
+    assert_eq!(pretty(1234000000000000.0), "1234000000000000");
+    assert_eq!(pretty(1.234e16), "12340000000000000");
     check!(2.71828);
-    check!(1.1e128);
+    assert_eq!(pretty(1.1e128), "1.1e+128");
     check!(1.1e-64);
     check!(2.718281828459045);
     check!(5e-324);
-    check!(1.7976931348623157e308);
+    assert_eq!(pretty(1.7976931348623157e308), "1.7976931348623157e+308");
 }
 
 #[test]
 fn test_random() {
     let n = if cfg!(miri) { 100 } else { 1000000 };
-    let mut buffer = ryu::Buffer::new();
+    let mut buffer = ryu_js::Buffer::new();
     for _ in 0..n {
         let f: f64 = rand::random();
         assert_eq!(f, buffer.format_finite(f).parse().unwrap());
@@ -72,20 +74,20 @@ fn test_non_finite() {
     for i in 0u64..1 << 23 {
         let f = f64::from_bits((((1 << 11) - 1) << 52) + (i << 29));
         assert!(!f.is_finite(), "f={}", f);
-        ryu::Buffer::new().format_finite(f);
+        ryu_js::Buffer::new().format_finite(f);
     }
 }
 
 #[test]
 fn test_basic() {
-    check!(0.0);
-    check!(-0.0);
-    check!(1.0);
-    check!(-1.0);
+    assert_eq!(pretty(0.0), "0");
+    assert_eq!(pretty(-0.0), "0");
+    assert_eq!(pretty(1.0), "1");
+    assert_eq!(pretty(-1.0), "-1");
     assert_eq!(pretty(f64::NAN.copysign(1.0)), "NaN");
     assert_eq!(pretty(f64::NAN.copysign(-1.0)), "NaN");
-    assert_eq!(pretty(f64::INFINITY), "inf");
-    assert_eq!(pretty(f64::NEG_INFINITY), "-inf");
+    assert_eq!(pretty(f64::INFINITY), "Infinity");
+    assert_eq!(pretty(f64::NEG_INFINITY), "-Infinity");
 }
 
 #[test]
@@ -96,7 +98,7 @@ fn test_switch_to_subnormal() {
 #[test]
 fn test_min_and_max() {
     assert_eq!(f64::from_bits(0x7fefffffffffffff), 1.7976931348623157e308);
-    check!(1.7976931348623157e308);
+    check!(1.7976931348623157e+308);
     assert_eq!(f64::from_bits(1), 5e-324);
     check!(5e-324);
 }
@@ -108,13 +110,12 @@ fn test_lots_of_trailing_zeros() {
 
 #[test]
 fn test_regression() {
-    check!(-2.109808898695963e16);
+    assert_eq!(pretty(-21098088986959630.0), "-21098088986959630");
     check!(4.940656e-318);
     check!(1.18575755e-316);
     check!(2.989102097996e-312);
-    check!(9060801153433600.0);
-    check!(4.708356024711512e18);
-    check!(9.409340012568248e18);
+    assert_eq!(pretty(4.708356024711512e+18), "4708356024711512000");
+    assert_eq!(pretty(9.409340012568248e+18), "9409340012568248000");
     check!(1.2345678);
 }
 
@@ -124,16 +125,15 @@ fn test_looks_like_pow5() {
     // 5 that fits, and an exponent that causes the computation for q to result
     // in 22, which is a corner case for Ryū.
     assert_eq!(f64::from_bits(0x4830F0CF064DD592), 5.764607523034235e39);
-    check!(5.764607523034235e39);
+    check!(5.764607523034235e+39);
     assert_eq!(f64::from_bits(0x4840F0CF064DD592), 1.152921504606847e40);
-    check!(1.152921504606847e40);
-    assert_eq!(f64::from_bits(0x4850F0CF064DD592), 2.305843009213694e40);
-    check!(2.305843009213694e40);
+    check!(1.152921504606847e+40);
+    assert_eq!(f64::from_bits(0x4850F0CF064DD592), 2.305843009213694e+40);
+    check!(2.305843009213694e+40);
 }
 
 #[test]
 fn test_output_length() {
-    check!(1.0); // already tested in Basic
     check!(1.2);
     check!(1.23);
     check!(1.234);
@@ -200,7 +200,7 @@ fn test_min_max_shift() {
     // 64-bit opt-size=0:  58 <= dist <= 58
     // 64-bit opt-size=1:  58 <= dist <= 58
     assert_eq!(1.8014398509481984E16, ieee_parts_to_double(false, 1077, 0));
-    check!(1.8014398509481984e16);
+    assert_eq!(pretty(1.8014398509481984e16), "18014398509481984");
     // 32-bit opt-size=0:  57 <= dist <= 57
     // 32-bit opt-size=1:  57 <= dist <= 57
     // 64-bit opt-size=0:  58 <= dist <= 58
@@ -209,7 +209,7 @@ fn test_min_max_shift() {
         3.6028797018963964E16,
         ieee_parts_to_double(false, 1076, max_mantissa)
     );
-    check!(3.6028797018963964e16);
+    assert_eq!(pretty(3.6028797018963964e+16), "36028797018963964");
     // 32-bit opt-size=0:  51 <= dist <= 52
     // 32-bit opt-size=1:  51 <= dist <= 59
     // 64-bit opt-size=0:  52 <= dist <= 52
@@ -239,93 +239,55 @@ fn test_min_max_shift() {
 }
 
 #[test]
-fn test_small_integers() {
-    check!(9007199254740991.0); // 2^53-1
-    check!(9007199254740992.0); // 2^53
+fn test_ecma262_compliance() {
+    assert_eq!(pretty(f64::NAN), "NaN");
+    assert_eq!(pretty(f64::INFINITY), "Infinity");
+    assert_eq!(pretty(f64::NEG_INFINITY), "-Infinity");
+    assert_eq!(pretty(0.0), "0");
+    assert_eq!(pretty(9.0), "9");
+    assert_eq!(pretty(90.0), "90");
+    assert_eq!(pretty(90.12), "90.12");
 
-    check!(1.0);
-    check!(12.0);
-    check!(123.0);
-    check!(1234.0);
-    check!(12345.0);
-    check!(123456.0);
-    check!(1234567.0);
-    check!(12345678.0);
-    check!(123456789.0);
-    check!(1234567890.0);
-    check!(1234567895.0);
-    check!(12345678901.0);
-    check!(123456789012.0);
-    check!(1234567890123.0);
-    check!(12345678901234.0);
-    check!(123456789012345.0);
-    check!(1234567890123456.0);
+    assert_eq!(pretty(0.000001), "0.000001");
+    assert_eq!(pretty(0.0000001), "1e-7");
+    assert_eq!(pretty(3e50), "3e+50");
 
-    // 10^i
-    check!(1.0);
-    check!(10.0);
-    check!(100.0);
-    check!(1000.0);
-    check!(10000.0);
-    check!(100000.0);
-    check!(1000000.0);
-    check!(10000000.0);
-    check!(100000000.0);
-    check!(1000000000.0);
-    check!(10000000000.0);
-    check!(100000000000.0);
-    check!(1000000000000.0);
-    check!(10000000000000.0);
-    check!(100000000000000.0);
-    check!(1000000000000000.0);
+    assert_eq!(pretty(90.12), "90.12");
 
-    // 10^15 + 10^i
-    check!(1000000000000001.0);
-    check!(1000000000000010.0);
-    check!(1000000000000100.0);
-    check!(1000000000001000.0);
-    check!(1000000000010000.0);
-    check!(1000000000100000.0);
-    check!(1000000001000000.0);
-    check!(1000000010000000.0);
-    check!(1000000100000000.0);
-    check!(1000001000000000.0);
-    check!(1000010000000000.0);
-    check!(1000100000000000.0);
-    check!(1001000000000000.0);
-    check!(1010000000000000.0);
-    check!(1100000000000000.0);
+    assert_eq!(pretty(111111111111111111111.0), "111111111111111110000");
+    assert_eq!(pretty(1111111111111111111111.0), "1.1111111111111111e+21");
+    assert_eq!(pretty(11111111111111111111111.0), "1.1111111111111111e+22");
 
-    // Largest power of 2 <= 10^(i+1)
-    check!(8.0);
-    check!(64.0);
-    check!(512.0);
-    check!(8192.0);
-    check!(65536.0);
-    check!(524288.0);
-    check!(8388608.0);
-    check!(67108864.0);
-    check!(536870912.0);
-    check!(8589934592.0);
-    check!(68719476736.0);
-    check!(549755813888.0);
-    check!(8796093022208.0);
-    check!(70368744177664.0);
-    check!(562949953421312.0);
-    check!(9007199254740992.0);
+    assert_eq!(pretty(0.1), "0.1");
+    assert_eq!(pretty(0.01), "0.01");
+    assert_eq!(pretty(0.001), "0.001");
+    assert_eq!(pretty(0.0001), "0.0001");
+    assert_eq!(pretty(0.00001), "0.00001");
+    assert_eq!(pretty(0.000001), "0.000001");
+    assert_eq!(pretty(0.0000001), "1e-7");
+    assert_eq!(pretty(0.00000012), "1.2e-7");
+    assert_eq!(pretty(0.000000123), "1.23e-7");
+    assert_eq!(pretty(0.00000001), "1e-8");
 
-    // 1000 * (Largest power of 2 <= 10^(i+1))
-    check!(8000.0);
-    check!(64000.0);
-    check!(512000.0);
-    check!(8192000.0);
-    check!(65536000.0);
-    check!(524288000.0);
-    check!(8388608000.0);
-    check!(67108864000.0);
-    check!(536870912000.0);
-    check!(8589934592000.0);
-    check!(68719476736000.0);
-    check!(549755813888000.0);
-    check!(8796093022208000.0);
+    assert_eq!(pretty(-0.0), "0");
+    assert_eq!(pretty(-9.0), "-9");
+    assert_eq!(pretty(-90.12), "-90.12");
+    assert_eq!(pretty(-0.0000000123), "-1.23e-8");
+    assert_eq!(pretty(-111111111111111111111.0), "-111111111111111110000");
+    assert_eq!(pretty(-1111111111111111111111.0), "-1.1111111111111111e+21");
+    assert_eq!(pretty(-0.000000123), "-1.23e-7");
+
+    assert_eq!(
+        pretty(123456789010111213141516171819.0),
+        "1.234567890101112e+29"
+    );
+}
+
+#[test]
+fn max_size_double_to_string() {
+    // See: https://viewer.scuttlebot.io/%25LQo5KOMeR%2Baj%2BEj0JVg3qLRqr%2BwiKo74nS8Uz7o0LDM%3D.sha256
+    assert_eq!(
+        pretty(-0.0000015809161985788154),
+        "-0.0000015809161985788154"
+    );
 }

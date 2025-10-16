@@ -1,13 +1,5 @@
-//! [![github]](https://github.com/dtolnay/ryu)&ensp;[![crates-io]](https://crates.io/crates/ryu)&ensp;[![docs-rs]](https://docs.rs/ryu)
-//!
-//! [github]: https://img.shields.io/badge/github-8da0cb?style=for-the-badge&labelColor=555555&logo=github
-//! [crates-io]: https://img.shields.io/badge/crates.io-fc8d62?style=for-the-badge&labelColor=555555&logo=rust
-//! [docs-rs]: https://img.shields.io/badge/docs.rs-66c2a5?style=for-the-badge&labelColor=555555&logo=docs.rs
-//!
-//! <br>
-//!
-//! Pure Rust implementation of Ryū, an algorithm to quickly convert floating
-//! point numbers to decimal strings.
+//! ECMAScript compliant pure Rust implementation of Ryū, an algorithm to quickly
+//! convert floating point numbers to decimal strings.
 //!
 //! The PLDI'18 paper [*Ryū: fast float-to-string conversion*][paper] by Ulf
 //! Adams includes a complete correctness proof of the algorithm. The paper is
@@ -22,34 +14,14 @@
 //! # Example
 //!
 //! ```
-//! fn main() {
-//!     let mut buffer = ryu::Buffer::new();
-//!     let printed = buffer.format(1.234);
-//!     assert_eq!(printed, "1.234");
-//! }
+//! let mut buffer = ryu_js::Buffer::new();
+//! let printed = buffer.format(1.234);
+//! assert_eq!(printed, "1.234");
 //! ```
 //!
 //! ## Performance (lower is better)
 //!
-//! ![performance](https://raw.githubusercontent.com/dtolnay/ryu/master/performance.png)
-//!
-//! You can run upstream's benchmarks with:
-//!
-//! ```console
-//! $ git clone https://github.com/ulfjack/ryu c-ryu
-//! $ cd c-ryu
-//! $ bazel run -c opt //ryu/benchmark
-//! ```
-//!
-//! And the same benchmark against our implementation with:
-//!
-//! ```console
-//! $ git clone https://github.com/dtolnay/ryu rust-ryu
-//! $ cd rust-ryu
-//! $ cargo run --example upstream_benchmark --release
-//! ```
-//!
-//! These benchmarks measure the average time to print a 32-bit float and average
+//! The benchmarks measure the average time to print a 32-bit float and average
 //! time to print a 64-bit float, where the inputs are distributed as uniform random
 //! bit patterns 32 and 64 bits wide.
 //!
@@ -81,7 +53,6 @@
 //! notation.
 
 #![no_std]
-#![doc(html_root_url = "https://docs.rs/ryu/1.0.20")]
 #![allow(
     clippy::cast_lossless,
     clippy::cast_possible_truncation,
@@ -116,9 +87,10 @@ mod f2s;
 mod f2s_intrinsics;
 mod pretty;
 
-pub use crate::buffer::{Buffer, Float};
+pub use crate::buffer::{Buffer, Float, FloatToFixed};
 
 /// Unsafe functions that mirror the API of the C implementation of Ryū.
 pub mod raw {
+    pub use crate::pretty::format64_to_fixed;
     pub use crate::pretty::{format32, format64};
 }

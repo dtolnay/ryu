@@ -1,3 +1,5 @@
+use crate::pretty::to_fixed::MAX_BUFFER_SIZE;
+
 use crate::raw;
 use core::mem::MaybeUninit;
 use core::{slice, str};
@@ -5,20 +7,23 @@ use core::{slice, str};
 use no_panic::no_panic;
 
 const NAN: &str = "NaN";
-const INFINITY: &str = "inf";
-const NEG_INFINITY: &str = "-inf";
+const INFINITY: &str = "Infinity";
+const NEG_INFINITY: &str = "-Infinity";
+
+const BUFFER_SIZE: usize = MAX_BUFFER_SIZE;
 
 /// Safe API for formatting floating point numbers to text.
 ///
 /// ## Example
 ///
 /// ```
-/// let mut buffer = ryu::Buffer::new();
+/// let mut buffer = ryu_js::Buffer::new();
 /// let printed = buffer.format_finite(1.234);
 /// assert_eq!(printed, "1.234");
 /// ```
+#[derive(Copy)]
 pub struct Buffer {
-    bytes: [MaybeUninit<u8>; 24],
+    bytes: [MaybeUninit<u8>; BUFFER_SIZE],
 }
 
 impl Buffer {
@@ -27,7 +32,8 @@ impl Buffer {
     #[inline]
     #[cfg_attr(feature = "no-panic", no_panic)]
     pub fn new() -> Self {
-        let bytes = [MaybeUninit::<u8>::uninit(); 24];
+        let bytes = [MaybeUninit::<u8>::uninit(); BUFFER_SIZE];
+
         Buffer { bytes }
     }
 
@@ -37,12 +43,14 @@ impl Buffer {
     /// # Special cases
     ///
     /// This function formats NaN as the string "NaN", positive infinity as
-    /// "inf", and negative infinity as "-inf" to match std::fmt.
+    /// "Infinity", and negative infinity as "-Infinity" to match the [ECMAScript specification][spec].
     ///
     /// If your input is known to be finite, you may get better performance by
     /// calling the `format_finite` method instead of `format` to avoid the
     /// checks for special cases.
-    #[cfg_attr(feature = "no-panic", inline)]
+    ///
+    /// [spec]: https://tc39.es/ecma262/#sec-numeric-types-number-tostring
+    #[inline]
     #[cfg_attr(feature = "no-panic", no_panic)]
     pub fn format<F: Float>(&mut self, f: F) -> &str {
         if f.is_nonfinite() {
@@ -64,22 +72,52 @@ impl Buffer {
     /// Please check [`is_finite`] yourself before calling this function, or
     /// check [`is_nan`] and [`is_infinite`] and handle those cases yourself.
     ///
-    /// [`is_finite`]: f64::is_finite
-    /// [`is_nan`]: f64::is_nan
-    /// [`is_infinite`]: f64::is_infinite
+    /// [`is_finite`]: https://doc.rust-lang.org/std/primitive.f64.html#method.is_finite
+    /// [`is_nan`]: https://doc.rust-lang.org/std/primitive.f64.html#method.is_nan
+    /// [`is_infinite`]: https://doc.rust-lang.org/std/primitive.f64.html#method.is_infinite
     #[inline]
     #[cfg_attr(feature = "no-panic", no_panic)]
     pub fn format_finite<F: Float>(&mut self, f: F) -> &str {
         unsafe {
-            let n = f.write_to_ryu_buffer(self.bytes.as_mut_ptr() as *mut u8);
+            let n = f.write_to_ryu_buffer(self.bytes.as_mut_ptr().cast::<u8>());
             debug_assert!(n <= self.bytes.len());
-            let slice = slice::from_raw_parts(self.bytes.as_ptr() as *const u8, n);
+            let slice = slice::from_raw_parts(self.bytes.as_ptr().cast::<u8>(), n);
+            str::from_utf8_unchecked(slice)
+        }
+    }
+
+    /// Print a floating point number into this buffer using the `Number.prototype.toFixed()` notation
+    /// and return a reference to its string representation within the buffer.
+    ///
+    /// The `fraction_digits` argument must be between `[0, 100]` inclusive,
+    /// If a values value that is greater than the max is passed in will be clamped to max.
+    ///
+    /// # Special cases
+    ///
+    /// This function formats NaN as the string "NaN", positive infinity as
+    /// "Infinity", and negative infinity as "-Infinity" to match the [ECMAScript specification][spec].
+    ///
+    /// [spec]: https://tc39.es/ecma262/#sec-numeric-types-number-tofixed
+    #[inline]
+    #[cfg_attr(feature = "no-panic", no_panic)]
+    pub fn format_to_fixed<F: FloatToFixed>(&mut self, f: F, fraction_digits: u8) -> &str {
+        let fraction_digits = fraction_digits.min(100);
+
+        if f.is_nonfinite() {
+            return f.format_nonfinite();
+        }
+
+        unsafe {
+            let n = f.write_to_ryu_buffer_to_fixed(
+                fraction_digits,
+                self.bytes.as_mut_ptr().cast::<u8>(),
+            );
+            debug_assert!(n <= self.bytes.len());
+            let slice = slice::from_raw_parts(self.bytes.as_ptr().cast::<u8>(), n);
             str::from_utf8_unchecked(slice)
         }
     }
 }
-
-impl Copy for Buffer {}
 
 impl Clone for Buffer {
     #[inline]
@@ -97,19 +135,31 @@ impl Default for Buffer {
     }
 }
 
-/// A floating point number, f32 or f64, that can be written into a
-/// [`ryu::Buffer`][Buffer].
+/// A floating point number, [`f32`] or [`f64`], that can be written into a
+/// [`ryu_js::Buffer`][Buffer].
 ///
 /// This trait is sealed and cannot be implemented for types outside of the
-/// `ryu` crate.
+/// `ryu-js` crate.
 pub trait Float: Sealed {}
 impl Float for f32 {}
 impl Float for f64 {}
+
+/// A floating point number that can be written into a
+/// [`ryu_js::Buffer`][Buffer] using the fixed notation as defined in the
+/// [`Number.prototype.toFixed( fractionDigits )`][spec] ECMAScript specification.
+///
+/// This trait is sealed and cannot be implemented for types outside of the
+/// `ryu-js` crate.
+///
+/// [spec]: https://tc39.es/ecma262/#sec-number.prototype.tofixed
+pub trait FloatToFixed: Sealed {}
+impl FloatToFixed for f64 {}
 
 pub trait Sealed: Copy {
     fn is_nonfinite(self) -> bool;
     fn format_nonfinite(self) -> &'static str;
     unsafe fn write_to_ryu_buffer(self, result: *mut u8) -> usize;
+    unsafe fn write_to_ryu_buffer_to_fixed(self, fraction_digits: u8, result: *mut u8) -> usize;
 }
 
 impl Sealed for f32 {
@@ -139,6 +189,11 @@ impl Sealed for f32 {
     unsafe fn write_to_ryu_buffer(self, result: *mut u8) -> usize {
         raw::format32(self, result)
     }
+
+    #[inline]
+    unsafe fn write_to_ryu_buffer_to_fixed(self, _fraction_digits: u8, _result: *mut u8) -> usize {
+        panic!("toFixed for f32 type is not implemented yet!")
+    }
 }
 
 impl Sealed for f64 {
@@ -167,5 +222,10 @@ impl Sealed for f64 {
     #[inline]
     unsafe fn write_to_ryu_buffer(self, result: *mut u8) -> usize {
         raw::format64(self, result)
+    }
+
+    #[inline]
+    unsafe fn write_to_ryu_buffer_to_fixed(self, fraction_digits: u8, result: *mut u8) -> usize {
+        raw::format64_to_fixed(self, fraction_digits, result)
     }
 }

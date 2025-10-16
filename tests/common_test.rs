@@ -74,18 +74,3 @@ fn test_log10_pow5() {
     assert_eq!(2, log10_pow5(4));
     assert_eq!(1831, log10_pow5(2620));
 }
-
-#[test]
-fn test_float_to_bits() {
-    assert_eq!(0, 0.0_f32.to_bits());
-    assert_eq!(0x40490fda, 3.1415926_f32.to_bits());
-}
-
-#[test]
-fn test_double_to_bits() {
-    assert_eq!(0, 0.0_f64.to_bits());
-    assert_eq!(
-        0x400921FB54442D18,
-        3.1415926535897932384626433_f64.to_bits(),
-    );
-}

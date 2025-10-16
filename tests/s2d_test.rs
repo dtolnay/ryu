@@ -18,6 +18,7 @@
 // is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 // KIND, either express or implied.
 
+#![allow(clippy::float_cmp)]
 #![cfg(not(feature = "small"))]
 #![allow(dead_code)]
 #![allow(
@@ -142,6 +143,7 @@ fn test_table_size_denormal() {
 }
 
 #[test]
+#[allow(clippy::excessive_precision)]
 fn test_issue157() {
     assert_eq!(
         1.2999999999999999E+154,
