@@ -81,9 +81,9 @@ impl Buffer {
 
 impl Copy for Buffer {}
 
+#[allow(clippy::non_canonical_clone_impl)] // false positive https://github.com/rust-lang/rust-clippy/issues/11072
 impl Clone for Buffer {
     #[inline]
-    #[allow(clippy::non_canonical_clone_impl)] // false positive https://github.com/rust-lang/rust-clippy/issues/11072
     fn clone(&self) -> Self {
         Buffer::new()
     }
