@@ -24,7 +24,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        rust: [nightly, beta, stable]
+        rust: [nightly, beta, stable, 1.68.0]
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v6
@@ -34,7 +34,9 @@ jobs:
       - name: Enable type layout randomization
         run: echo RUSTFLAGS=${RUSTFLAGS}\ -Zrandomize-layout >> $GITHUB_ENV
         if: matrix.rust == 'nightly'
+      - run: cargo build
       - run: cargo test
+      - run: cargo build --features small
       - run: cargo test --features small
       - run: cargo build --tests --features no-panic --release
         if: matrix.rust == 'nightly'
@@ -44,18 +46,6 @@ jobs:
           name: Cargo.lock
           path: Cargo.lock
         continue-on-error: true
-
-  msrv:
-    name: Rust 1.58.0
-    needs: pre_ci
-    if: needs.pre_ci.outputs.continue
-    runs-on: ubuntu-latest
-    timeout-minutes: 45
-    steps:
-      - uses: actions/checkout@v6
-      - uses: dtolnay/rust-toolchain@1.58.0
-      - run: cargo build
-      - run: cargo build --features small
 
   doc:
     name: Documentation
