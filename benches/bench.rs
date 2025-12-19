@@ -9,9 +9,10 @@
 
 extern crate test;
 
+use std::hint;
 use std::io::Write;
 use std::{f32, f64};
-use test::{black_box, Bencher};
+use test::Bencher;
 
 macro_rules! benches {
     ($($name:ident($value:expr),)*) => {
@@ -23,9 +24,9 @@ macro_rules! benches {
                     let mut buf = ryu::Buffer::new();
 
                     b.iter(move || {
-                        let value = black_box($value);
+                        let value = hint::black_box($value);
                         let formatted = buf.format_finite(value);
-                        black_box(formatted);
+                        hint::black_box(formatted);
                     });
                 }
             )*
@@ -40,9 +41,9 @@ macro_rules! benches {
 
                     b.iter(|| {
                         buf.clear();
-                        let value = black_box($value);
+                        let value = hint::black_box($value);
                         write!(&mut buf, "{}", value).unwrap();
-                        black_box(buf.as_slice());
+                        hint::black_box(buf.as_slice());
                     });
                 }
             )*
