@@ -148,7 +148,7 @@ pub fn s2d(buffer: &[u8]) -> Result<f64, Error> {
         // We also compute if the result is exact, i.e.,
         //   [m10 * 10^e10 / 2^e2] == m10 * 10^e10 / 2^e2.
         // This can only be the case if 2^e2 divides m10 * 10^e10, which in turn
-        // requires that the largest power of 2 that divides m10 + e10 is
+        // requires that the largest power of 2 that divides m10 * 10^e10 is
         // greater than e2. If e2 is less than e10, then the result must be
         // exact. Otherwise we use the existing multiple_of_power_of_2 function.
         trailing_zeros =

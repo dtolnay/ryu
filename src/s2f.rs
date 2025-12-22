@@ -145,7 +145,7 @@ pub fn s2f(buffer: &[u8]) -> Result<f32, Error> {
         // We also compute if the result is exact, i.e.,
         //   [m10 * 10^e10 / 2^e2] == m10 * 10^e10 / 2^e2.
         // This can only be the case if 2^e2 divides m10 * 10^e10, which in turn
-        // requires that the largest power of 2 that divides m10 + e10 is
+        // requires that the largest power of 2 that divides m10 * 10^e10 is
         // greater than e2. If e2 is less than e10, then the result must be
         // exact. Otherwise we use the existing multiple_of_power_of_2 function.
         trailing_zeros =
@@ -171,7 +171,7 @@ pub fn s2f(buffer: &[u8]) -> Result<f32, Error> {
         // divides m10, which is the case iff pow5(m10) >= -e10 AND pow2(m10) >=
         // e2-e10.
         //
-        // If e2-e10 < 0, we have actually computed [m10 * 2^(e10 e2) /
+        // If e2-e10 < 0, we have actually computed [m10 * 2^(e10-e2) /
         // 5^(-e10)] above, and we need to check whether 5^(-e10) divides (m10 *
         // 2^(e10-e2)), which is the case iff pow5(m10 * 2^(e10-e2)) = pow5(m10)
         // >= -e10.
