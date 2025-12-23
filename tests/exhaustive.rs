@@ -2,7 +2,7 @@
 #![allow(clippy::cast_possible_truncation)]
 
 use std::str;
-use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::atomic::{AtomicU32, AtomicU64, Ordering};
 use std::sync::Arc;
 use std::thread;
 
@@ -10,15 +10,15 @@ use std::thread;
 #[cfg_attr(not(exhaustive), ignore = "requires cfg(exhaustive)")]
 fn test_exhaustive() {
     const BATCH_SIZE: u32 = 1_000_000;
-    let counter = Arc::new(AtomicUsize::new(0));
-    let finished = Arc::new(AtomicUsize::new(0));
+    let counter = Arc::new(AtomicU32::new(0));
+    let finished = Arc::new(AtomicU64::new(0));
 
     let mut workers = Vec::new();
     for _ in 0..num_cpus::get() {
         let counter = counter.clone();
         let finished = finished.clone();
         workers.push(thread::spawn(move || loop {
-            let batch = counter.fetch_add(1, Ordering::Relaxed) as u32;
+            let batch = counter.fetch_add(1, Ordering::Relaxed);
             if batch > u32::MAX / BATCH_SIZE {
                 return;
             }
@@ -42,7 +42,7 @@ fn test_exhaustive() {
                 assert_eq!(Ok(f), buffer.format_finite(f).parse());
             }
 
-            let increment = (max - min + 1) as usize;
+            let increment = (max - min + 1) as u64;
             let update = finished.fetch_add(increment, Ordering::Relaxed);
             println!("{}", update + increment);
         }));
