@@ -42,7 +42,7 @@ fn test_exhaustive() {
                 assert_eq!(Ok(f), buffer.format_finite(f).parse());
             }
 
-            let increment = (max - min + 1) as u64;
+            let increment = u64::from(max - min + 1);
             let update = finished.fetch_add(increment, Ordering::Relaxed);
             println!("{}", update + increment);
         }));
