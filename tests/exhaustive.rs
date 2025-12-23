@@ -2,7 +2,7 @@
 #![allow(clippy::cast_possible_truncation)]
 
 use std::str;
-use std::sync::atomic::{AtomicU32, AtomicU64, Ordering};
+use std::sync::atomic::{AtomicU32, Ordering};
 use std::sync::Arc;
 use std::thread;
 
@@ -11,7 +11,7 @@ use std::thread;
 fn test_exhaustive() {
     const BATCH_SIZE: u32 = 1_000_000;
     let counter = Arc::new(AtomicU32::new(0));
-    let finished = Arc::new(AtomicU64::new(0));
+    let finished = Arc::new(AtomicU32::new(0));
 
     let mut workers = Vec::new();
     for _ in 0..num_cpus::get() {
@@ -42,9 +42,9 @@ fn test_exhaustive() {
                 assert_eq!(Ok(f), buffer.format_finite(f).parse());
             }
 
-            let increment = u64::from(max - min + 1);
+            let increment = max - min + 1;
             let update = finished.fetch_add(increment, Ordering::Relaxed);
-            println!("{}", update + increment);
+            println!("{}", u64::from(update) + u64::from(increment));
         }));
     }
 
