@@ -1,5 +1,4 @@
 #![cfg_attr(not(check_cfg), allow(unexpected_cfgs))]
-#![allow(clippy::cast_possible_truncation)]
 
 use std::str;
 use std::sync::atomic::{AtomicU32, Ordering};
