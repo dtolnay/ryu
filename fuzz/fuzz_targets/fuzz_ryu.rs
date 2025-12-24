@@ -1,14 +1,7 @@
 #![no_main]
 
-use arbitrary::Arbitrary;
 use libfuzzer_sys::fuzz_target;
 use std::mem;
-
-#[derive(Arbitrary, Debug)]
-enum FloatInput {
-    F32(f32),
-    F64(f64),
-}
 
 macro_rules! ryu_test {
     ($val:expr, $method:ident) => {
@@ -25,12 +18,10 @@ macro_rules! ryu_test {
     };
 }
 
-fuzz_target!(|inputs: (FloatInput, bool)| {
+fuzz_target!(|inputs: (f64, bool)| {
     let (input, finite) = inputs;
     match (input, finite) {
-        (FloatInput::F32(val), false) => ryu_test!(val, format),
-        (FloatInput::F32(val), true) => ryu_test!(val, format_finite),
-        (FloatInput::F64(val), false) => ryu_test!(val, format),
-        (FloatInput::F64(val), true) => ryu_test!(val, format_finite),
+        (val, false) => ryu_test!(val, format),
+        (val, true) => ryu_test!(val, format_finite),
     }
 });
