@@ -115,6 +115,8 @@ mod digit_table;
 mod f2s;
 mod f2s_intrinsics;
 mod pretty;
+#[cfg(test)]
+mod tests;
 
 pub use crate::buffer::{Buffer, Float};
 
