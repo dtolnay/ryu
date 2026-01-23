@@ -16,7 +16,7 @@ This Rust implementation is a line-by-line port of Ulf Adams' implementation in
 C, [https://github.com/ulfjack/ryu][upstream].
 
 [paper]: https://dl.acm.org/citation.cfm?id=3192369
-[upstream]: https://github.com/ulfjack/ryu/tree/1264a946ba66eab320e927bfd2362e0c8580c42f
+[upstream]: https://github.com/ulfjack/ryu/tree/e3e090c66efd258a0cee50ee93411ec99668d416
 
 ```toml
 [dependencies]
