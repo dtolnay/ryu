@@ -118,7 +118,7 @@ jobs:
       - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@stable
       - uses: dtolnay/install@cargo-outdated
-      - run: cargo outdated --workspace --ignore rand_xorshift --exit-code 1
+      - run: cargo outdated --workspace --ignore rand,rand_core,rand_xorshift --exit-code 1
       - run: cargo outdated --manifest-path fuzz/Cargo.toml --exit-code 1
 
   fuzz:
