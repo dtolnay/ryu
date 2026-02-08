@@ -10,7 +10,7 @@ exclude = ["build.rs", "*.png"]
 keywords = ["float"]
 license = "Apache-2.0 OR BSL-1.0"
 repository = "https://github.com/dtolnay/ryu"
-rust-version = "1.68"
+rust-version = "1.71"
 
 [features]
 # Use smaller lookup tables. Instead of storing every required power of
