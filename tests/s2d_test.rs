@@ -165,3 +165,25 @@ fn test_issue173() {
         s2d(b"2.2250738585072014e-308").unwrap(),
     );
 }
+
+#[test]
+fn test_boundary() {
+    // Subnormal/normal boundary near f64::MIN_POSITIVE
+    assert_eq!(f64::from_bits(0x000FFFFFFFFFFFFF), s2d(b"2.225073858507201e-308").unwrap());
+    assert_eq!(f64::MIN_POSITIVE, s2d(b"2.2250738585072014e-308").unwrap());
+    assert_eq!(f64::from_bits(0x0010000000000001), s2d(b"2.225073858507202e-308").unwrap());
+
+    // Neighbors of powers of two
+    assert_eq!(f64::from_bits(0x3FDFFFFFFFFFFFFF), s2d(b"0.49999999999999994").unwrap());
+    assert_eq!(0.5, s2d(b"0.5").unwrap());
+    assert_eq!(f64::from_bits(0x3FE0000000000001), s2d(b"0.5000000000000001").unwrap());
+    assert_eq!(f64::from_bits(0x3FEFFFFFFFFFFFFF), s2d(b"0.9999999999999999").unwrap());
+    assert_eq!(1.0, s2d(b"1.0").unwrap());
+    assert_eq!(f64::from_bits(0x3FF0000000000001), s2d(b"1.0000000000000002").unwrap());
+    assert_eq!(f64::from_bits(0x3FFFFFFFFFFFFFFF), s2d(b"1.9999999999999998").unwrap());
+    assert_eq!(2.0, s2d(b"2.0").unwrap());
+    assert_eq!(f64::from_bits(0x4000000000000001), s2d(b"2.0000000000000004").unwrap());
+    assert_eq!(f64::from_bits(0x400FFFFFFFFFFFFF), s2d(b"3.9999999999999996").unwrap());
+    assert_eq!(4.0, s2d(b"4.0").unwrap());
+    assert_eq!(f64::from_bits(0x4010000000000001), s2d(b"4.000000000000001").unwrap());
+}

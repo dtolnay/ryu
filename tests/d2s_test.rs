@@ -329,3 +329,54 @@ fn test_small_integers() {
     check!(549755813888000.0);
     check!(8796093022208000.0);
 }
+#[test]
+fn test_boundary_values() {
+    // Subnormal/normal boundary near f64::MIN_POSITIVE
+    check!(2.225073858507201e-308); // largest subnormal
+    check!(2.2250738585072014e-308); // smallest positive normal
+    check!(2.225073858507202e-308); // just above smallest positive normal
+
+    // Neighbors of powers of two
+    check!(0.49999999999999994);
+    check!(0.5);
+    check!(0.5000000000000001);
+    check!(0.9999999999999999);
+    check!(1.0);
+    check!(1.0000000000000002);
+    check!(1.9999999999999998);
+    check!(2.0);
+    check!(2.0000000000000004);
+    check!(3.9999999999999996);
+    check!(4.0);
+    check!(4.000000000000001);
+
+    // Negative counterparts
+    check!(-0.49999999999999994);
+    check!(-2.225073858507201e-308);
+    check!(-4.000000000000001);
+
+    // Round-trip parse-back assertions
+    let mut buf = ryu::Buffer::new();
+    for f in [
+        2.225073858507201e-308,
+        2.2250738585072014e-308,
+        2.225073858507202e-308,
+        0.49999999999999994,
+        0.5,
+        0.5000000000000001,
+        0.9999999999999999,
+        1.0,
+        1.0000000000000002,
+        1.9999999999999998,
+        2.0,
+        2.0000000000000004,
+        3.9999999999999996,
+        4.0,
+        4.000000000000001,
+        -0.49999999999999994,
+        -2.225073858507201e-308,
+        -4.000000000000001,
+    ] {
+        assert_eq!(f, buf.format(f).parse().unwrap());
+    }
+}
