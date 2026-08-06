@@ -29,8 +29,6 @@
 #[macro_use]
 mod macros;
 
-use std::f32;
-
 fn pretty(f: f32) -> String {
     ryu::Buffer::new().format(f).to_owned()
 }

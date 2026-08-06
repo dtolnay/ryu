@@ -31,8 +31,6 @@
 #[macro_use]
 mod macros;
 
-use std::f64;
-
 fn pretty(f: f64) -> String {
     ryu::Buffer::new().format(f).to_owned()
 }
