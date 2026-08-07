@@ -120,7 +120,7 @@ mod d2s_intrinsics;
 #[cfg(feature = "small")]
 mod d2s_small_table;
 mod digit_table;
-mod f2s;
+pub mod f2s;
 mod f2s_intrinsics;
 mod pretty;
 #[cfg(test)]
